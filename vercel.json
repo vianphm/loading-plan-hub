@@ -1,6 +1,9 @@
 {
   "version": 2,
   "name": "loading-plan-hub",
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": ".",
   "cleanUrls": true,
   "headers": [
     {
@@ -12,5 +15,8 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/data/(.*)", "destination": "/data/$1" }
   ]
 }
