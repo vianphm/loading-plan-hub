@@ -917,7 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="display:flex;align-items:center;gap:10px;">
               <span style="font-size:1.4rem;line-height:1;">${ai.flag}</span>
               <div>
-                <span style="font-size:0.9rem;font-weight:800;color:#f1f5f9;">${dest}</span>
+                <span style="font-size:0.9rem;font-weight:800;color:#f1f5f9;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#f1f5f9'" onclick="openDestDetail('${dest}')">${dest}</span>
                 <span style="font-size:0.72rem;color:#94a3b8;margin-left:6px;">${ai.city}${ai.country ? ` · ${ai.country}` : ''}</span>
                 <span style="display:inline-block;font-size:0.6rem;font-weight:700;color:${color};background:${color}22;border-radius:4px;padding:1px 5px;margin-left:6px;">${region}</span>
               </div>
@@ -969,14 +969,14 @@ document.addEventListener('DOMContentLoaded', () => {
               const ai = AIRPORT_INFO[d];
               const region = REGION_MAP[d] || 'Other';
               const color = REGION_COLOR[region] || '#64748b';
-              return `<th style="padding:6px 4px;text-align:center;color:${color};font-weight:700;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;" title="${ai?.city||d}">${ai?.flag||''} ${d}</th>`;
+              return `<th style="padding:6px 4px;text-align:center;color:${color};font-weight:700;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;cursor:pointer;" title="${ai?.city||d}" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="openDestDetail('${d}')">${ai?.flag||''} ${d}</th>`;
             }).join('')}
           </tr>
         </thead>
         <tbody>
           ${topAgents.map(agent => `
             <tr onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
-              <td style="padding:7px 8px;font-weight:700;color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap;">${agent}</td>
+              <td style="padding:7px 8px;font-weight:700;color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#e2e8f0'" onclick="openAgentDetail('${agent.replace(/'/g, "\\'")}')">${agent}</td>
               ${topDests.map(dest => {
                 const val = matrix[agent][dest];
                 const intensity = val > 0 ? Math.max(0.08, val / maxVal) : 0;
