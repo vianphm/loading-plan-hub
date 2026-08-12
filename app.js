@@ -258,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ratio = totalGw > 0 ? (totalCw / totalGw).toFixed(2) : '0.00';
 
     document.getElementById('kpiTotalRecords').textContent = filteredData.length.toLocaleString('vi-VN');
-    document.getElementById('kpiTotalPcs').textContent = totalPcs.toLocaleString('vi-VN');
     document.getElementById('kpiTotalGw').textContent = Math.round(totalGw).toLocaleString('vi-VN') + ' KG';
     document.getElementById('kpiTotalCw').textContent = Math.round(totalCw).toLocaleString('vi-VN') + ' KG';
     document.getElementById('kpiCwGwRatio').textContent = ratio;
