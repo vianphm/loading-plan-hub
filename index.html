@@ -61,13 +61,16 @@
       <!-- View Switcher Tabs -->
       <div class="view-switcher">
         <button class="tab-btn active" data-view="weekly">
-          <i class="ph ph-calendar-blank"></i> Theo Dõi Theo Tuần (Weekly)
+          <i class="ph ph-calendar-blank"></i> Theo Dõi Theo Tuần
         </button>
         <button class="tab-btn" data-view="monthly">
-          <i class="ph ph-calendar-plus"></i> Theo Dõi Theo Tháng (Monthly)
+          <i class="ph ph-calendar-plus"></i> Theo Dõi Theo Tháng
+        </button>
+        <button class="tab-btn" data-view="sales">
+          <i class="ph ph-chart-pie-slice"></i> Sales Intelligence
         </button>
         <button class="tab-btn" data-view="detail">
-          <i class="ph ph-table"></i> Tra Cứu Vận Đơn (Master List)
+          <i class="ph ph-table"></i> Tra Cứu Vận Đơn
         </button>
       </div>
     </div>
@@ -278,7 +281,132 @@
       </div>
     </section>
 
-    <!-- SECTION 3: MASTER DETAIL SEARCH VIEW -->
+    <!-- SECTION 3: SALES INTELLIGENCE VIEW -->
+    <section id="salesViewSection" class="view-section" style="display: none;">
+      <div style="margin-bottom: 1.5rem;">
+        <span class="eyebrow">Customer & Market Intelligence · Sales Optimization</span>
+        <h3 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 700;">Phân Tích Khách Hàng · Vùng Thị Trường · Điểm Đến</h3>
+      </div>
+
+      <!-- Sales Filter Bar -->
+      <div class="control-bar" style="margin-bottom: 1.5rem;">
+        <select id="salesMonthFilter" class="filter-select">
+          <option value="">Tất cả tháng</option>
+        </select>
+        <select id="salesRegionFilter" class="filter-select">
+          <option value="">Tất cả vùng</option>
+          <option value="Far East">Far East 🇰🇷🇯🇵</option>
+          <option value="India">India 🇮🇳</option>
+          <option value="Europe">Europe 🇪🇺</option>
+          <option value="Americas">Americas 🇺🇸</option>
+          <option value="Middle East">Middle East 🇦🇪</option>
+          <option value="SE Asia">SE Asia 🌏</option>
+          <option value="Oceania">Oceania 🇦🇺</option>
+        </select>
+        <button class="pill-btn" id="exportSalesBtn">
+          <span>Xuất Sales Report</span>
+          <div class="icon-circle"><i class="ph ph-download-simple"></i></div>
+        </button>
+      </div>
+
+      <!-- PROSPECTING / SĂN SALES -->
+      <div class="bento-grid" style="margin-bottom: 1.5rem;">
+        <div class="bento-span-12 doppel-outer">
+          <div class="doppel-inner" style="background: linear-gradient(145deg, #0f172a, #0a0f1e); border: 1px solid #38bdf844;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h2 style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; display:flex; align-items:center; gap:8px;">
+                  <i class="ph-fill ph-target"></i> CÔNG CỤ SĂN SALES (PROSPECTING)
+                </h2>
+                <p style="font-size:0.8rem; color:#94a3b8; margin-top:4px;">Tìm kiếm danh sách Đại lý mục tiêu đang gom hàng đi theo Tuyến (Dest) hoặc Hãng bay (Carrier)</p>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <select id="prospectDestFilter" class="filter-select" style="min-width:120px;"><option value="">✈️ Mọi Điểm Đến</option></select>
+                <select id="prospectCarrierFilter" class="filter-select" style="min-width:120px;"><option value="">🏢 Mọi Hãng Bay</option></select>
+                <select id="prospectCompanyFilter" class="filter-select" style="min-width:120px;"><option value="">🏭 Mọi Sheet (F1, FE...)</option></select>
+                <button id="btnProspect" class="pill-btn" style="background: var(--accent-blue);">
+                  <span>Tìm Kiếm</span>
+                  <div class="icon-circle" style="background: rgba(0,0,0,0.2);"><i class="ph ph-magnifying-glass"></i></div>
+                </button>
+              </div>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); padding: 15px; min-height: 150px;">
+              <div id="prospectingResults">
+                <div style="padding: 3rem; text-align: center; color: #64748b;">
+                  <i class="ph ph-target" style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+                  <p>Chọn Tiêu chí (Tuyến / Hãng / Company) và bấm "Tìm Kiếm" để lọc danh sách khách hàng mục tiêu.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 1: Regional Donut + Customer Leaderboard -->
+      <div class="bento-grid" style="margin-bottom: 1.5rem;">
+
+        <!-- Regional Breakdown -->
+        <div class="bento-span-4 doppel-outer">
+          <div class="doppel-inner" style="height: 100%;">
+            <div class="kpi-head">
+              <span class="kpi-title">PHÂN BỔ THEO VÙNG (CW)</span>
+              <span class="eyebrow" style="margin:0;">REGION SHARE</span>
+            </div>
+            <div style="height: 240px; position: relative;">
+              <canvas id="regionDonutChart"></canvas>
+            </div>
+            <div id="regionLegend" style="margin-top: 1rem;"></div>
+          </div>
+        </div>
+
+        <!-- Customer Leaderboard -->
+        <div class="bento-span-8 doppel-outer">
+          <div class="doppel-inner">
+            <div class="kpi-head">
+              <span class="kpi-title">TOP KHÁCH HÀNG (AGENT LEADERBOARD)</span>
+              <div style="display:flex; gap: 0.5rem; align-items: center;">
+                <span class="eyebrow" style="margin:0;">BY CW</span>
+                <select id="sortAgentBy" class="filter-select" style="font-size:0.7rem; padding: 0.2rem 0.5rem;">
+                  <option value="cw">Sort: CW</option>
+                  <option value="count">Sort: Số lô</option>
+                  <option value="avg">Sort: Avg CW</option>
+                </select>
+              </div>
+            </div>
+            <div id="customerLeaderboard" style="max-height: 380px; overflow-y: auto;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Destination Intel + Route Matrix -->
+      <div class="bento-grid">
+
+        <!-- Destination Table -->
+        <div class="bento-span-6 doppel-outer">
+          <div class="doppel-inner">
+            <div class="kpi-head">
+              <span class="kpi-title">ĐIỂM ĐẾN TOP (DESTINATION INTEL)</span>
+              <span class="eyebrow" style="margin:0;">BY VOLUME</span>
+            </div>
+            <div id="destinationIntel" style="max-height: 400px; overflow-y: auto;"></div>
+          </div>
+        </div>
+
+        <!-- Route Matrix -->
+        <div class="bento-span-6 doppel-outer">
+          <div class="doppel-inner">
+            <div class="kpi-head">
+              <span class="kpi-title">MA TRẬN AGENT × ĐIỂM ĐẾN</span>
+              <span class="eyebrow" style="margin:0;">ROUTE MATRIX</span>
+            </div>
+            <div id="routeMatrix" style="max-height: 400px; overflow-y: auto; overflow-x: auto;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: MASTER DETAIL SEARCH VIEW -->
     <section id="detailViewSection" class="view-section" style="display: none;">
       <!-- Search & Control Bar -->
       <section class="control-bar">

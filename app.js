@@ -12,10 +12,84 @@ document.addEventListener('DOMContentLoaded', () => {
   let monthlyCwChartInstance = null;
   let carrierMarketChartInstance = null;
 
+  // Sales Intelligence chart instance
+  let regionDonutChartInstance = null;
+
+  // ── REGION & AIRPORT INTELLIGENCE MAPS ──────────────────────────────────
+  const REGION_MAP = {
+    ICN:'Far East',GMP:'Far East',PUS:'Far East',
+    NRT:'Far East',HND:'Far East',KIX:'Far East',NGO:'Far East',FUK:'Far East',
+    HKG:'Far East',CAN:'Far East',PEK:'Far East',PVG:'Far East',CTU:'Far East',SZX:'Far East',
+    MAA:'India',DEL:'India',BLR:'India',BOM:'India',AMD:'India',CCU:'India',HYD:'India',COK:'India',PNQ:'India',CMB:'India',DAC:'India',KTM:'India',
+    LHR:'Europe',LGW:'Europe',MAN:'Europe',CDG:'Europe',FRA:'Europe',MUC:'Europe',DUS:'Europe',AMS:'Europe',BRU:'Europe',MXP:'Europe',FCO:'Europe',MAD:'Europe',BCN:'Europe',ZRH:'Europe',VIE:'Europe',PRG:'Europe',WAW:'Europe',ARN:'Europe',CPH:'Europe',HEL:'Europe',IST:'Europe',
+    BKK:'SE Asia',DMK:'SE Asia',SIN:'SE Asia',KUL:'SE Asia',PEN:'SE Asia',CGK:'SE Asia',MNL:'SE Asia',SGN:'SE Asia',HAN:'SE Asia',RGN:'SE Asia',
+    JFK:'Americas',EWR:'Americas',LAX:'Americas',SFO:'Americas',ORD:'Americas',ATL:'Americas',DFW:'Americas',SEA:'Americas',IAD:'Americas',MIA:'Americas',BOS:'Americas',YYZ:'Americas',YVR:'Americas',GRU:'Americas',
+    DXB:'Middle East',AUH:'Middle East',DOH:'Middle East',RUH:'Middle East',JED:'Middle East',KWI:'Middle East',BAH:'Middle East',MCT:'Middle East',AMM:'Middle East',
+    SYD:'Oceania',MEL:'Oceania',BNE:'Oceania',PER:'Oceania',AKL:'Oceania',
+    NBO:'Africa',JNB:'Africa',ADD:'Africa',LOS:'Africa',CAI:'Africa'
+  };
+  const REGION_COLOR = {
+    'Far East':'#38bdf8','India':'#f59e0b','Europe':'#8b5cf6',
+    'Americas':'#10b981','Middle East':'#f97316','SE Asia':'#06b6d4',
+    'Oceania':'#84cc16','Africa':'#ec4899','Other':'#64748b'
+  };
+  const AIRPORT_INFO = {
+    ICN:{city:'Seoul',country:'South Korea',flag:'🇰🇷'},
+    PUS:{city:'Busan',country:'South Korea',flag:'🇰🇷'},
+    NRT:{city:'Tokyo Narita',country:'Japan',flag:'🇯🇵'},
+    HND:{city:'Tokyo Haneda',country:'Japan',flag:'🇯🇵'},
+    KIX:{city:'Osaka',country:'Japan',flag:'🇯🇵'},
+    HKG:{city:'Hong Kong',country:'HK China',flag:'🇭🇰'},
+    PEK:{city:'Beijing',country:'China',flag:'🇨🇳'},
+    PVG:{city:'Shanghai',country:'China',flag:'🇨🇳'},
+    CAN:{city:'Guangzhou',country:'China',flag:'🇨🇳'},
+    MAA:{city:'Chennai',country:'India',flag:'🇮🇳'},
+    DEL:{city:'Delhi',country:'India',flag:'🇮🇳'},
+    BLR:{city:'Bangalore',country:'India',flag:'🇮🇳'},
+    BOM:{city:'Mumbai',country:'India',flag:'🇮🇳'},
+    AMD:{city:'Ahmedabad',country:'India',flag:'🇮🇳'},
+    CCU:{city:'Kolkata',country:'India',flag:'🇮🇳'},
+    HYD:{city:'Hyderabad',country:'India',flag:'🇮🇳'},
+    COK:{city:'Kochi',country:'India',flag:'🇮🇳'},
+    CMB:{city:'Colombo',country:'Sri Lanka',flag:'🇱🇰'},
+    LHR:{city:'London',country:'UK',flag:'🇬🇧'},
+    MXP:{city:'Milan',country:'Italy',flag:'🇮🇹'},
+    FCO:{city:'Rome',country:'Italy',flag:'🇮🇹'},
+    AMS:{city:'Amsterdam',country:'Netherlands',flag:'🇳🇱'},
+    FRA:{city:'Frankfurt',country:'Germany',flag:'🇩🇪'},
+    MUC:{city:'Munich',country:'Germany',flag:'🇩🇪'},
+    CDG:{city:'Paris',country:'France',flag:'🇫🇷'},
+    MAD:{city:'Madrid',country:'Spain',flag:'🇪🇸'},
+    ZRH:{city:'Zurich',country:'Switzerland',flag:'🇨🇭'},
+    VIE:{city:'Vienna',country:'Austria',flag:'🇦🇹'},
+    IST:{city:'Istanbul',country:'Turkey',flag:'🇹🇷'},
+    BKK:{city:'Bangkok',country:'Thailand',flag:'🇹🇭'},
+    SIN:{city:'Singapore',country:'Singapore',flag:'🇸🇬'},
+    KUL:{city:'Kuala Lumpur',country:'Malaysia',flag:'🇲🇾'},
+    PEN:{city:'Penang',country:'Malaysia',flag:'🇲🇾'},
+    CGK:{city:'Jakarta',country:'Indonesia',flag:'🇮🇩'},
+    MNL:{city:'Manila',country:'Philippines',flag:'🇵🇭'},
+    JFK:{city:'New York',country:'USA',flag:'🇺🇸'},
+    LAX:{city:'Los Angeles',country:'USA',flag:'🇺🇸'},
+    SFO:{city:'San Francisco',country:'USA',flag:'🇺🇸'},
+    ORD:{city:'Chicago',country:'USA',flag:'🇺🇸'},
+    YYZ:{city:'Toronto',country:'Canada',flag:'🇨🇦'},
+    DXB:{city:'Dubai',country:'UAE',flag:'🇦🇪'},
+    AUH:{city:'Abu Dhabi',country:'UAE',flag:'🇦🇪'},
+    DOH:{city:'Doha',country:'Qatar',flag:'🇶🇦'},
+    RUH:{city:'Riyadh',country:'Saudi Arabia',flag:'🇸🇦'},
+    JED:{city:'Jeddah',country:'Saudi Arabia',flag:'🇸🇦'},
+    KWI:{city:'Kuwait',country:'Kuwait',flag:'🇰🇼'},
+    SYD:{city:'Sydney',country:'Australia',flag:'🇦🇺'},
+    MEL:{city:'Melbourne',country:'Australia',flag:'🇦🇺'},
+    AKL:{city:'Auckland',country:'New Zealand',flag:'🇳🇿'}
+  };
+
   // DOM Elements
   const tabBtns = document.querySelectorAll('.tab-btn');
   const weeklyViewSection = document.getElementById('weeklyViewSection');
   const monthlyViewSection = document.getElementById('monthlyViewSection');
+  const salesViewSection = document.getElementById('salesViewSection');
   const detailViewSection = document.getElementById('detailViewSection');
 
   const searchInput = document.getElementById('searchInput');
@@ -56,10 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = btn.dataset.view;
       weeklyViewSection.style.display = view === 'weekly' ? 'block' : 'none';
       monthlyViewSection.style.display = view === 'monthly' ? 'block' : 'none';
+      salesViewSection.style.display = view === 'sales' ? 'block' : 'none';
       detailViewSection.style.display = view === 'detail' ? 'block' : 'none';
 
       if (view === 'weekly') renderWeeklyAnalytics();
       if (view === 'monthly') renderMonthlyAnalytics();
+      if (view === 'sales') renderSalesIntel();
     });
   });
 
@@ -460,6 +536,437 @@ document.addEventListener('DOMContentLoaded', () => {
     link.click();
     document.body.removeChild(link);
   }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  SALES INTELLIGENCE MODULE
+  // ══════════════════════════════════════════════════════════════════
+
+  function getSalesData() {
+    const monthFilter = document.getElementById('salesMonthFilter')?.value || '';
+    const regionFilter = document.getElementById('salesRegionFilter')?.value || '';
+    // Only include records with valid IATA dest code and meaningful agent name
+    return masterData.filter(r => {
+      const validDest = /^[A-Z]{3}$/.test(r.dest);
+      const validAgent = r.agent && /[A-Za-z]/.test(r.agent) && r.agent.length >= 2 && r.agent.length <= 20;
+      const validCw = r.cw > 0;
+      if (!validDest || !validAgent || !validCw) return false;
+      if (monthFilter && !String(r.fileName || '').toLowerCase().includes(monthFilter.toLowerCase())) return false;
+      const region = REGION_MAP[r.dest] || 'Other';
+      if (regionFilter && region !== regionFilter) return false;
+      return true;
+    });
+  }
+
+  function renderSalesIntel() {
+    const data = getSalesData();
+    populateSalesMonthFilter();
+    renderRegionalDonut(data);
+    renderCustomerLeaderboard(data);
+    renderDestinationIntel(data);
+    renderRouteMatrix(data);
+
+    // Filter change listeners
+    document.getElementById('salesMonthFilter')?.addEventListener('change', () => {
+      const d = getSalesData();
+      renderRegionalDonut(d);
+      renderCustomerLeaderboard(d);
+      renderDestinationIntel(d);
+      renderRouteMatrix(d);
+    });
+    document.getElementById('salesRegionFilter')?.addEventListener('change', () => {
+      const d = getSalesData();
+      renderCustomerLeaderboard(d);
+      renderDestinationIntel(d);
+      renderRouteMatrix(d);
+    });
+    document.getElementById('sortAgentBy')?.addEventListener('change', () => renderCustomerLeaderboard(getSalesData()));
+    document.getElementById('exportSalesBtn')?.addEventListener('click', () => exportSalesCSV(getSalesData()));
+
+    // Prospecting Init
+    initProspectingFilters();
+    document.getElementById('btnProspect')?.addEventListener('click', renderProspecting);
+  }
+
+  function initProspectingFilters() {
+    const destSel = document.getElementById('prospectDestFilter');
+    const carrSel = document.getElementById('prospectCarrierFilter');
+    const compSel = document.getElementById('prospectCompanyFilter');
+    if (!destSel || destSel.options.length > 1) return; // already inited
+
+    const validData = masterData.filter(r => r.cw > 0 && r.agent && r.agent.length >= 2);
+    
+    // Dests
+    const dests = [...new Set(validData.map(r => r.dest).filter(d => /^[A-Z]{3}$/.test(d)))].sort();
+    dests.forEach(d => {
+      const opt = document.createElement('option');
+      const ai = AIRPORT_INFO[d];
+      opt.value = d; opt.textContent = ai ? `${ai.flag} ${d} - ${ai.city}` : d;
+      destSel.appendChild(opt);
+    });
+
+    // Carriers
+    const carrs = [...new Set(validData.map(r => r.carrier).filter(c => c && c.length >= 2))].sort();
+    carrs.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = `✈️ ${c}`;
+      carrSel.appendChild(opt);
+    });
+
+    // Companies (Sheet Names)
+    const comps = [...new Set(validData.map(r => r.company).filter(Boolean))].sort();
+    comps.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = `🏭 ${c}`;
+      compSel.appendChild(opt);
+    });
+  }
+
+  function renderProspecting() {
+    const dest = document.getElementById('prospectDestFilter')?.value;
+    const carr = document.getElementById('prospectCarrierFilter')?.value;
+    const comp = document.getElementById('prospectCompanyFilter')?.value;
+    const resEl = document.getElementById('prospectingResults');
+    if (!resEl) return;
+
+    if (!dest && !carr && !comp) {
+      resEl.innerHTML = `
+        <div style="padding: 3rem; text-align: center; color: #64748b;">
+          <i class="ph ph-warning-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+          <p>Vui lòng chọn ít nhất 1 tiêu chí (Tuyến, Hãng hoặc Công ty) để lọc.</p>
+        </div>`;
+      return;
+    }
+
+    const data = masterData.filter(r => {
+      if (r.cw <= 0 || !r.agent || r.agent.length < 2) return false;
+      if (dest && r.dest !== dest) return false;
+      if (carr && r.carrier !== carr) return false;
+      if (comp && r.company !== comp) return false;
+      return true;
+    });
+
+    if (data.length === 0) {
+      resEl.innerHTML = `
+        <div style="padding: 3rem; text-align: center; color: #64748b;">
+          <i class="ph ph-ghost" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+          <p>Không có khách hàng nào khớp với tiêu chí tìm kiếm này.</p>
+        </div>`;
+      return;
+    }
+
+    const agentMap = {};
+    data.forEach(r => {
+      const a = r.agent.trim().toUpperCase();
+      if (!agentMap[a]) agentMap[a] = { cw: 0, count: 0, carriers: {}, dests: {}, companies: {} };
+      agentMap[a].cw += r.cw || 0;
+      agentMap[a].count++;
+      if (r.carrier) agentMap[a].carriers[r.carrier] = (agentMap[a].carriers[r.carrier] || 0) + (r.cw || 0);
+      if (r.dest) agentMap[a].dests[r.dest] = (agentMap[a].dests[r.dest] || 0) + (r.cw || 0);
+      if (r.company) agentMap[a].companies[r.company] = (agentMap[a].companies[r.company] || 0) + (r.cw || 0);
+    });
+
+    const sorted = Object.entries(agentMap).sort((a,b) => b[1].cw - a[1].cw);
+
+    let html = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h4 style="color:#e2e8f0; margin:0; font-size:1rem;">Khách hàng Tiềm năng (Top ${sorted.length})</h4>
+        <span style="background:var(--accent-blue); color:#fff; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:700;">
+          TỔNG SẢN LƯỢNG MỤC TIÊU: ${Math.round(data.reduce((s,r)=>s+r.cw,0)).toLocaleString('vi-VN')} kg
+        </span>
+      </div>
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Tên Đại Lý (Agent)</th>
+            <th style="text-align:right;">Tổng CW Target</th>
+            <th style="text-align:right;">Số Lô</th>
+            <th>Công Ty (Sheet)</th>
+            <th>Hãng Bay Ưa Chuộng</th>
+            <th>Tuyến Ưa Chuộng</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    sorted.slice(0, 50).forEach(([agent, info], idx) => {
+      const topComp = Object.entries(info.companies).sort((a,b)=>b[1]-a[1])[0]?.[0] || '-';
+      const topCarr = Object.entries(info.carriers).sort((a,b)=>b[1]-a[1])[0]?.[0] || '-';
+      const topDest = Object.entries(info.dests).sort((a,b)=>b[1]-a[1])[0]?.[0] || '-';
+      const ai = AIRPORT_INFO[topDest];
+      
+      html += `
+        <tr>
+          <td style="color:#64748b; font-weight:700;">${idx+1}</td>
+          <td style="font-weight:700; color:#38bdf8; font-size:1.1rem;">${agent}</td>
+          <td style="text-align:right; font-weight:700; color:#10b981;">${Math.round(info.cw).toLocaleString('vi-VN')} kg</td>
+          <td style="text-align:right; color:#94a3b8;">${info.count}</td>
+          <td style="color:#f59e0b; font-weight:600;"><i class="ph-fill ph-factory"></i> ${topComp}</td>
+          <td style="color:#e2e8f0; font-weight:600;"><i class="ph-fill ph-airplane-tilt"></i> ${topCarr}</td>
+          <td style="color:#e2e8f0; font-weight:600;">${ai?.flag||''} ${topDest}</td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table>`;
+    resEl.innerHTML = html;
+  }
+
+  function populateSalesMonthFilter() {
+    const sel = document.getElementById('salesMonthFilter');
+    if (!sel || sel.options.length > 1) return;
+    const months = [...new Set(masterData.map(r => {
+      const f = r.fileName || '';
+      const m = f.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/i);
+      return m ? m[0].toLowerCase() : null;
+    }).filter(Boolean))];
+    const labels = {jan:'Tháng 1',feb:'Tháng 2',mar:'Tháng 3',apr:'Tháng 4',may:'Tháng 5',jun:'Tháng 6',jul:'Tháng 7',aug:'Tháng 8',sep:'Tháng 9',oct:'Tháng 10',nov:'Tháng 11',dec:'Tháng 12'};
+    months.sort().forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = labels[m] || m;
+      sel.appendChild(opt);
+    });
+  }
+
+  function renderRegionalDonut(data) {
+    const regionTotals = {};
+    data.forEach(r => {
+      const region = REGION_MAP[r.dest] || 'Other';
+      regionTotals[region] = (regionTotals[region] || 0) + (r.cw || 0);
+    });
+    const sorted = Object.entries(regionTotals).sort((a,b) => b[1]-a[1]);
+    const labels = sorted.map(e => e[0]);
+    const values = sorted.map(e => Math.round(e[1]));
+    const colors = labels.map(l => REGION_COLOR[l] || '#64748b');
+    const total = values.reduce((s,v)=>s+v,0);
+
+    const ctx = document.getElementById('regionDonutChart');
+    if (!ctx) return;
+    if (regionDonutChartInstance) regionDonutChartInstance.destroy();
+    regionDonutChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#0a0f1e', hoverOffset: 6 }] },
+      options: {
+        cutout: '65%', responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toLocaleString('vi-VN')} kg (${((ctx.parsed/total)*100).toFixed(1)}%)` } }
+        }
+      }
+    });
+
+    // Custom legend
+    const legend = document.getElementById('regionLegend');
+    if (legend) {
+      legend.innerHTML = sorted.map(([region, cw]) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:${REGION_COLOR[region]||'#64748b'};flex-shrink:0;"></div>
+            <span style="font-size:0.75rem;font-weight:600;color:#e2e8f0;">${region}</span>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:0.75rem;color:${REGION_COLOR[region]||'#64748b'};font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</span>
+            <span style="font-size:0.65rem;color:#64748b;margin-left:4px;">${((cw/total)*100).toFixed(1)}%</span>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  function renderCustomerLeaderboard(data) {
+    const sortBy = document.getElementById('sortAgentBy')?.value || 'cw';
+    const agentMap = {};
+    data.forEach(r => {
+      const a = r.agent.trim().toUpperCase();
+      if (!agentMap[a]) agentMap[a] = { cw: 0, gw: 0, count: 0, pcs: 0, dests: {} };
+      agentMap[a].cw += r.cw || 0;
+      agentMap[a].gw += r.gw || 0;
+      agentMap[a].count++;
+      agentMap[a].pcs += r.pcs || 0;
+      agentMap[a].dests[r.dest] = (agentMap[a].dests[r.dest] || 0) + (r.cw || 0);
+    });
+
+    let sorted = Object.entries(agentMap);
+    if (sortBy === 'count') sorted.sort((a,b) => b[1].count - a[1].count);
+    else if (sortBy === 'avg') sorted.sort((a,b) => (b[1].cw/b[1].count) - (a[1].cw/a[1].count));
+    else sorted.sort((a,b) => b[1].cw - a[1].cw);
+
+    const maxCw = sorted[0]?.[1]?.cw || 1;
+
+    function getTier(cw) {
+      if (cw >= 10000) return { label: '🐋 Whale', color: '#38bdf8' };
+      if (cw >= 5000) return { label: '🔥 Major', color: '#f59e0b' };
+      if (cw >= 1000) return { label: '📦 Regular', color: '#10b981' };
+      return { label: '🔹 Small', color: '#64748b' };
+    }
+
+    const el = document.getElementById('customerLeaderboard');
+    if (!el) return;
+    if (!sorted.length) { el.innerHTML = '<div style="color:#64748b;padding:2rem;text-align:center;">Không có dữ liệu hợp lệ</div>'; return; }
+
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;margin-bottom:8px;padding:0 8px;">
+        <span style="font-size:0.65rem;color:#64748b;font-weight:700;letter-spacing:.08em;">AGENT</span>
+        <span style="font-size:0.65rem;color:#64748b;font-weight:700;letter-spacing:.08em;text-align:right;">TOTAL CW</span>
+        <span style="font-size:0.65rem;color:#64748b;font-weight:700;letter-spacing:.08em;text-align:right;">SỐ LÔ</span>
+        <span style="font-size:0.65rem;color:#64748b;font-weight:700;letter-spacing:.08em;text-align:right;">AVG CW</span>
+        <span style="font-size:0.65rem;color:#64748b;font-weight:700;letter-spacing:.08em;text-align:right;">TOP DEST</span>
+      </div>
+      ${sorted.map(([agent, info], i) => {
+        const tier = getTier(info.cw);
+        const pct = (info.cw / maxCw * 100).toFixed(1);
+        const topDest = Object.entries(info.dests).sort((a,b)=>b[1]-a[1])[0]?.[0] || '-';
+        const ai = AIRPORT_INFO[topDest];
+        const destLabel = ai ? `${ai.flag} ${topDest}` : topDest;
+        const avgCw = Math.round(info.cw / info.count);
+        return `
+          <div style="padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;align-items:center;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:0.7rem;color:#475569;font-weight:600;width:18px;">${i+1}</span>
+                <div>
+                  <span style="font-size:0.85rem;font-weight:700;color:#f1f5f9;">${agent}</span>
+                  <span style="font-size:0.65rem;font-weight:600;color:${tier.color};margin-left:6px;">${tier.label}</span>
+                </div>
+              </div>
+              <span style="font-size:0.8rem;font-weight:700;color:${tier.color};text-align:right;">${Math.round(info.cw).toLocaleString('vi-VN')} kg</span>
+              <span style="font-size:0.75rem;color:#94a3b8;text-align:right;">${info.count} lô</span>
+              <span style="font-size:0.75rem;color:#94a3b8;text-align:right;">${avgCw.toLocaleString('vi-VN')} kg</span>
+              <span style="font-size:0.75rem;color:#94a3b8;text-align:right;">${destLabel}</span>
+            </div>
+            <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:${tier.color};border-radius:2px;transition:width .5s ease;"></div>
+            </div>
+          </div>`;
+      }).join('')}`;
+  }
+
+  function renderDestinationIntel(data) {
+    const destMap = {};
+    data.forEach(r => {
+      if (!destMap[r.dest]) destMap[r.dest] = { cw: 0, gw: 0, count: 0, agents: new Set() };
+      destMap[r.dest].cw += r.cw || 0;
+      destMap[r.dest].gw += r.gw || 0;
+      destMap[r.dest].count++;
+      destMap[r.dest].agents.add(r.agent.trim().toUpperCase());
+    });
+    const sorted = Object.entries(destMap).sort((a,b) => b[1].cw - a[1].cw);
+    const maxCw = sorted[0]?.[1]?.cw || 1;
+
+    const el = document.getElementById('destinationIntel');
+    if (!el) return;
+    if (!sorted.length) { el.innerHTML = '<div style="color:#64748b;padding:2rem;text-align:center;">Không có dữ liệu</div>'; return; }
+
+    el.innerHTML = sorted.map(([dest, info]) => {
+      const ai = AIRPORT_INFO[dest] || { city: dest, country: '', flag: '✈️' };
+      const region = REGION_MAP[dest] || 'Other';
+      const color = REGION_COLOR[region] || '#64748b';
+      const pct = (info.cw / maxCw * 100).toFixed(1);
+      return `
+        <div style="padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.4rem;line-height:1;">${ai.flag}</span>
+              <div>
+                <span style="font-size:0.9rem;font-weight:800;color:#f1f5f9;">${dest}</span>
+                <span style="font-size:0.72rem;color:#94a3b8;margin-left:6px;">${ai.city}${ai.country ? ` · ${ai.country}` : ''}</span>
+                <span style="display:inline-block;font-size:0.6rem;font-weight:700;color:${color};background:${color}22;border-radius:4px;padding:1px 5px;margin-left:6px;">${region}</span>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:0.85rem;font-weight:700;color:${color};">${Math.round(info.cw).toLocaleString('vi-VN')} kg</div>
+              <div style="font-size:0.65rem;color:#64748b;">${info.count} lô · ${info.agents.size} agent</div>
+            </div>
+          </div>
+          <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${color};border-radius:2px;"></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderRouteMatrix(data) {
+    // Get top 8 agents and top 8 dests by CW
+    const agentTotals = {}, destTotals = {};
+    data.forEach(r => {
+      const a = r.agent.trim().toUpperCase();
+      agentTotals[a] = (agentTotals[a] || 0) + (r.cw || 0);
+      destTotals[r.dest] = (destTotals[r.dest] || 0) + (r.cw || 0);
+    });
+    const topAgents = Object.entries(agentTotals).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
+    const topDests = Object.entries(destTotals).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
+
+    // Build matrix
+    const matrix = {};
+    topAgents.forEach(a => { matrix[a] = {}; topDests.forEach(d => matrix[a][d] = 0); });
+    data.forEach(r => {
+      const a = r.agent.trim().toUpperCase();
+      if (matrix[a] && topDests.includes(r.dest)) {
+        matrix[a][r.dest] = (matrix[a][r.dest] || 0) + (r.cw || 0);
+      }
+    });
+    const allVals = topAgents.flatMap(a => topDests.map(d => matrix[a][d]));
+    const maxVal = Math.max(...allVals, 1);
+
+    const el = document.getElementById('routeMatrix');
+    if (!el) return;
+
+    el.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:0.7rem;">
+        <thead>
+          <tr>
+            <th style="padding:6px 8px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;">AGENT ↓ / DEST →</th>
+            ${topDests.map(d => {
+              const ai = AIRPORT_INFO[d];
+              const region = REGION_MAP[d] || 'Other';
+              const color = REGION_COLOR[region] || '#64748b';
+              return `<th style="padding:6px 4px;text-align:center;color:${color};font-weight:700;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;" title="${ai?.city||d}">${ai?.flag||''} ${d}</th>`;
+            }).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${topAgents.map(agent => `
+            <tr onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+              <td style="padding:7px 8px;font-weight:700;color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap;">${agent}</td>
+              ${topDests.map(dest => {
+                const val = matrix[agent][dest];
+                const intensity = val > 0 ? Math.max(0.08, val / maxVal) : 0;
+                const region = REGION_MAP[dest] || 'Other';
+                const color = REGION_COLOR[region] || '#64748b';
+                const bg = val > 0 ? `${color}${Math.round(intensity*60).toString(16).padStart(2,'0')}` : 'transparent';
+                const textColor = val > 0 ? color : '#334155';
+                return `<td style="padding:7px 4px;text-align:center;background:${bg};border-bottom:1px solid rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.03);color:${textColor};font-weight:${val>0?'700':'400'};">${val > 0 ? Math.round(val).toLocaleString('vi-VN') : '—'}</td>`;
+              }).join('')}
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function exportSalesCSV(data) {
+    const agentMap = {};
+    data.forEach(r => {
+      const a = r.agent.trim().toUpperCase();
+      if (!agentMap[a]) agentMap[a] = { cw: 0, gw: 0, count: 0, pcs: 0, dests: {} };
+      agentMap[a].cw += r.cw || 0;
+      agentMap[a].gw += r.gw || 0;
+      agentMap[a].count++;
+      agentMap[a].pcs += r.pcs || 0;
+      agentMap[a].dests[r.dest] = (agentMap[a].dests[r.dest] || 0) + (r.cw || 0);
+    });
+    const rows = [['Agent','Total CW (kg)','Total GW (kg)','Số Lô Hàng','Total PCS','Avg CW/Lô','Top Dest','Top Dest CW','Region']];
+    Object.entries(agentMap).sort((a,b)=>b[1].cw-a[1].cw).forEach(([agent,info]) => {
+      const [topDest, topDestCw] = Object.entries(info.dests).sort((a,b)=>b[1]-a[1])[0] || ['-',0];
+      const region = REGION_MAP[topDest] || 'Other';
+      rows.push([agent,Math.round(info.cw),Math.round(info.gw),info.count,info.pcs,Math.round(info.cw/info.count),topDest,Math.round(topDestCw),region]);
+    });
+    const csv = rows.map(r=>r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`sales_report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    showToast('📊 Đã xuất Sales Report CSV!');
+  }
+
+  // ══════════════════════════════════════════════════════════════════
 
   // Event Listeners
   if (searchInput) searchInput.addEventListener('input', filterData);
