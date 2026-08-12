@@ -91,19 +91,6 @@
         </div>
       </div>
 
-      <!-- KPI 2: Total PCS -->
-      <div class="bento-span-4 doppel-outer">
-        <div class="doppel-inner kpi-card">
-          <div class="kpi-head">
-            <span class="kpi-title">TỔNG SỐ KIỆN (PCS)</span>
-            <div class="kpi-icon-box" style="color: var(--accent-cyan);"><i class="ph ph-boxes"></i></div>
-          </div>
-          <div>
-            <div class="kpi-value" style="color: var(--accent-cyan);" id="kpiTotalPcs">0</div>
-            <div class="kpi-sub">Số kiện hàng hóa luân chuyển</div>
-          </div>
-        </div>
-      </div>
 
       <!-- KPI 3: Total Gross Weight -->
       <div class="bento-span-4 doppel-outer">
@@ -134,7 +121,7 @@
       </div>
 
       <!-- KPI 5: Volumetric Ratio (CW / GW) -->
-      <div class="bento-span-4 doppel-outer">
+      <div class="bento-span-6 doppel-outer">
         <div class="doppel-inner kpi-card">
           <div class="kpi-head">
             <span class="kpi-title">HỆ SỐ NÉN HÀNG (CW / GW RATIO)</span>
@@ -148,7 +135,7 @@
       </div>
 
       <!-- KPI 6: Total CBM -->
-      <div class="bento-span-4 doppel-outer">
+      <div class="bento-span-6 doppel-outer">
         <div class="doppel-inner kpi-card">
           <div class="kpi-head">
             <span class="kpi-title">TỔNG THỂ TÍCH (CBM)</span>
@@ -365,10 +352,13 @@
         <div class="bento-span-3 doppel-outer">
           <div class="doppel-inner" style="height: 100%;">
             <div class="kpi-head">
-              <span class="kpi-title">SALES TEAM PERFORMANCE</span>
-              <span class="eyebrow" style="margin:0;">COMPANY RANKING</span>
+              <div>
+                <span class="kpi-title">SALES TEAM PERFORMANCE</span>
+                <span class="eyebrow" style="margin:0;">COMPANY RANKING</span>
+              </div>
+              <button class="btn-expand" onclick="expandDashboard('SALES TEAM PERFORMANCE', 'salesTeamLeaderboard')"><i class="ph ph-arrows-out"></i></button>
             </div>
-            <div id="salesTeamLeaderboard" style="margin-top: 1rem;">
+            <div id="salesTeamLeaderboard" style="margin-top: 1rem; overflow-y: auto; max-height: 250px;">
               <div style="color:#64748b; text-align:center; padding: 2rem;">Đang tải dữ liệu...</div>
             </div>
           </div>
@@ -377,15 +367,15 @@
         <!-- Customer Leaderboard -->
         <div class="bento-span-6 doppel-outer">
           <div class="doppel-inner">
-            <div class="kpi-head">
+            <div class="kpi-head" style="margin-bottom: 1rem;">
               <span class="kpi-title">TOP KHÁCH HÀNG (AGENT LEADERBOARD)</span>
               <div style="display:flex; gap: 0.5rem; align-items: center;">
                 <span class="eyebrow" style="margin:0;">BY CW</span>
                 <select id="sortAgentBy" class="filter-select" style="font-size:0.7rem; padding: 0.2rem 0.5rem;">
                   <option value="cw">Sort: CW</option>
-                  <option value="count">Sort: Số lô</option>
-                  <option value="avg">Sort: Avg CW</option>
+                  <option value="freq">Sort: Số Lô</option>
                 </select>
+                <button class="btn-expand" onclick="expandDashboard('TOP KHÁCH HÀNG (AGENT LEADERBOARD)', 'agentLeaderboard')"><i class="ph ph-arrows-out"></i></button>
               </div>
             </div>
             <div id="customerLeaderboard" style="max-height: 380px; overflow-y: auto;"></div>
@@ -394,25 +384,31 @@
       </div>
 
       <!-- Row 2: Destination Intel + Route Matrix -->
-      <div class="bento-grid">
-
-        <!-- Destination Table -->
-        <div class="bento-span-6 doppel-outer">
+      <div class="bento-grid" style="margin-bottom: 1.5rem;">
+        
+        <!-- Destination Top -->
+        <div class="bento-span-4 doppel-outer">
           <div class="doppel-inner">
-            <div class="kpi-head">
+            <div class="kpi-head" style="margin-bottom: 1rem;">
               <span class="kpi-title">ĐIỂM ĐẾN TOP (DESTINATION INTEL)</span>
-              <span class="eyebrow" style="margin:0;">BY VOLUME</span>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <span class="eyebrow" style="margin:0;">BY VOLUME</span>
+                <button class="btn-expand" onclick="expandDashboard('ĐIỂM ĐẾN TOP (DESTINATION INTEL)', 'destinationIntel')"><i class="ph ph-arrows-out"></i></button>
+              </div>
             </div>
-            <div id="destinationIntel" style="max-height: 400px; overflow-y: auto;"></div>
+            <div id="destinationIntel" style="height: 300px; overflow-y: auto;"></div>
           </div>
         </div>
 
         <!-- Route Matrix -->
-        <div class="bento-span-6 doppel-outer">
+        <div class="bento-span-8 doppel-outer">
           <div class="doppel-inner">
-            <div class="kpi-head">
+            <div class="kpi-head" style="margin-bottom: 1rem;">
               <span class="kpi-title">MA TRẬN AGENT × ĐIỂM ĐẾN</span>
-              <span class="eyebrow" style="margin:0;">ROUTE MATRIX</span>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <span class="eyebrow" style="margin:0;">ROUTE MATRIX</span>
+                <button class="btn-expand" onclick="expandDashboard('MA TRẬN AGENT × ĐIỂM ĐẾN', 'routeMatrix')"><i class="ph ph-arrows-out"></i></button>
+              </div>
             </div>
             <div id="routeMatrix" style="max-height: 400px; overflow-y: auto; overflow-x: auto;"></div>
           </div>
@@ -476,6 +472,23 @@
         </div>
       </section>
     </section>
+  </div>
+
+  <!-- Fullscreen Modal -->
+  <div id="fullscreenModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle" style="color: var(--accent-blue); margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+          <i class="ph-fill ph-chart-bar"></i> <span id="modalTitleText">Dashboard</span>
+        </h3>
+        <button onclick="closeModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+      <div id="modalBody" class="modal-body">
+        <!-- Content injected here -->
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>
