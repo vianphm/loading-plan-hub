@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading Plan Hub - Báo Cáo Phân Tích & Theo Dõi Hàng Tuần / Tháng</title>
+  <meta name="description" content="Hệ thống tổng hợp, phân tích dữ liệu và dashboard theo dõi sản lượng vận tải hàng không hàng tuần & hàng tháng">
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js & Phosphor Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toastNotification" class="toast-notification">
+    <i class="ph ph-check-circle" style="font-size: 1.2rem; color: #34d399;"></i>
+    <span id="toastMessage">Đã đồng bộ dữ liệu mới nhất!</span>
+  </div>
+
+  <!-- Radial Background Mesh Orbs -->
+  <div class="radial-mesh"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="ph ph-airplane-tilt"></i>
+        </div>
+        <div class="brand-text">
+          <h1>LOADING PLAN HUB</h1>
+          <span>Air Freight Operations & Executive Analytics</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <div class="header-status">
+          <div class="pulse-dot"></div>
+          <span id="syncStatusText">Tự động đồng bộ Vercel CD</span>
+        </div>
+        
+        <!-- Live Auto-Update & Refresh Button -->
+        <button class="pill-btn" id="refreshBtn" title="Kiểm tra & Cập nhật phiên bản dữ liệu mới nhất từ Vercel CDN">
+          <span id="refreshBtnText">Cập nhật phiên bản mới</span>
+          <div class="icon-circle">
+            <i class="ph ph-arrows-clockwise" id="refreshIcon"></i>
+          </div>
+        </button>
+      </div>
+    </header>
+
+    <!-- Subheader & Mode Switcher (Weekly vs Monthly vs Master View) -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span class="eyebrow">Weekly & Monthly Operations Intelligence</span>
+        <h2 style="font-family: var(--font-heading); font-size: 1.85rem; font-weight: 700;">Báo Cáo Phân Tích Dữ Liệu Theo Tuần & Tháng</h2>
+        <div style="font-size: 0.775rem; color: #64748b; margin-top: 0.25rem;" id="lastSyncTime">Cập nhật lần cuối: Đang tải...</div>
+      </div>
+
+      <!-- View Switcher Tabs -->
+      <div class="view-switcher">
+        <button class="tab-btn active" data-view="weekly">
+          <i class="ph ph-calendar-blank"></i> Theo Dõi Theo Tuần (Weekly)
+        </button>
+        <button class="tab-btn" data-view="monthly">
+          <i class="ph ph-calendar-plus"></i> Theo Dõi Theo Tháng (Monthly)
+        </button>
+        <button class="tab-btn" data-view="detail">
+          <i class="ph ph-table"></i> Tra Cứu Vận Đơn (Master List)
+        </button>
+      </div>
+    </div>
+
+    <!-- Asymmetrical Bento Grid KPI Cards -->
+    <section class="bento-grid">
+      <!-- KPI 1: Total Records -->
+      <div class="bento-span-4 doppel-outer">
+        <div class="doppel-inner kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">TỔNG SỐ LÔ HÀNG (RECORDS)</span>
+            <div class="kpi-icon-box"><i class="ph ph-package"></i></div>
+          </div>
+          <div>
+            <div class="kpi-value" id="kpiTotalRecords">0</div>
+            <div class="kpi-sub">Tổng số bản ghi vận đơn khai thác</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 2: Total PCS -->
+      <div class="bento-span-4 doppel-outer">
+        <div class="doppel-inner kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">TỔNG SỐ KIỆN (PCS)</span>
+            <div class="kpi-icon-box" style="color: var(--accent-cyan);"><i class="ph ph-boxes"></i></div>
+          </div>
+          <div>
+            <div class="kpi-value" style="color: var(--accent-cyan);" id="kpiTotalPcs">0</div>
+            <div class="kpi-sub">Số kiện hàng hóa luân chuyển</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 3: Total Gross Weight -->
+      <div class="bento-span-4 doppel-outer">
+        <div class="doppel-inner kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">TRỌNG LƯỢNG THỰC (GW)</span>
+            <div class="kpi-icon-box" style="color: var(--accent-emerald);"><i class="ph ph-scales"></i></div>
+          </div>
+          <div>
+            <div class="kpi-value" style="color: var(--accent-emerald);" id="kpiTotalGw">0 KG</div>
+            <div class="kpi-sub">Tổng trọng lượng hàng thực tế</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 4: Total Chargeable Weight -->
+      <div class="bento-span-4 doppel-outer">
+        <div class="doppel-inner kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">TRỌNG LƯỢNG TÍNH CƯỚC (CW)</span>
+            <div class="kpi-icon-box" style="color: var(--accent-purple);"><i class="ph ph-currency-dollar-simple"></i></div>
+          </div>
+          <div>
+            <div class="kpi-value" style="color: var(--accent-purple);" id="kpiTotalCw">0 KG</div>
+            <div class="kpi-sub">Tổng trọng lượng quy đổi tính cước</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 5: Volumetric Ratio (CW / GW) -->
+      <div class="bento-span-4 doppel-outer">
+        <div class="doppel-inner kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">HỆ SỐ NÉN HÀNG (CW / GW RATIO)</span>
+            <div class="kpi-icon-box" style="color: var(--accent-amber);"><i class="ph ph-chart-line-up"></i></div>
+          </div>
+          <div>
+            <div class="kpi-value" style="color: var(--accent-amber);" id="kpiCwGwRatio">0.00</div>
+            <div class="kpi-sub" id="kpiCwGwSub">Phân loại: Hàng cồng kềnh hay Hàng nặng</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 6: Total CBM -->
+      <div class="bento-span-4 doppel-outer">
+        <div class="doppel-inner kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">TỔNG THỂ TÍCH (CBM)</span>
+            <div class="kpi-icon-box" style="color: var(--accent-rose);"><i class="ph ph-cube"></i></div>
+          </div>
+          <div>
+            <div class="kpi-value" style="color: var(--accent-rose);" id="kpiTotalCbm">0 CBM</div>
+            <div class="kpi-sub">Thể tích chiếm dụng trên tàu bay</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: WEEKLY ANALYTICS VIEW -->
+    <section id="weeklyViewSection" class="view-section">
+      <div style="margin-bottom: 1.5rem;">
+        <span class="eyebrow">Weekly Volume Trend & Growth</span>
+        <h3 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 700;">Biểu Đồ & Bảng Phân Tích Sản Lượng Theo Tuần</h3>
+      </div>
+
+      <div class="bento-grid">
+        <div class="bento-span-8 doppel-outer">
+          <div class="doppel-inner">
+            <div class="kpi-head">
+              <span class="kpi-title">XU HƯỚNG TĂNG TRƯỞNG SẢN LƯỢNG THEO TUẦN (CW vs GW)</span>
+              <span class="eyebrow" style="margin:0;">WEEKLY TREND</span>
+            </div>
+            <div style="height: 300px; position: relative;">
+              <canvas id="weeklyTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="bento-span-4 doppel-outer">
+          <div class="doppel-inner">
+            <div class="kpi-head">
+              <span class="kpi-title">TỶ TRỌNG SẢN LƯỢNG THEO TUẦN</span>
+              <span class="eyebrow" style="margin:0;">SHARE %</span>
+            </div>
+            <div style="height: 300px; position: relative;">
+              <canvas id="weeklyPieChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Breakdown Table -->
+      <div class="doppel-outer" style="margin-top: 1.5rem;">
+        <div class="doppel-inner">
+          <h4 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 1rem; color: #38bdf8;">Bảng Báo Cáo Chi Tiết Theo Tuần (Weekly Summary)</h4>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>TUẦN (WEEK)</th>
+                  <th>THỜI GIAN</th>
+                  <th>SỐ LÔ HÀNG</th>
+                  <th>SỐ KIỆN (PCS)</th>
+                  <th>GW (KG)</th>
+                  <th>CW (KG)</th>
+                  <th>THỂ TÍCH (CBM)</th>
+                  <th>HỆ SỐ (CW/GW)</th>
+                  <th>MẬT ĐỘ (CW/CBM)</th>
+                </tr>
+              </thead>
+              <tbody id="weeklyTableBody">
+                <tr><td colspan="9" style="text-align: center; padding: 2rem; color: #64748b;">Đang tổng hợp dữ liệu theo tuần...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: MONTHLY ANALYTICS VIEW -->
+    <section id="monthlyViewSection" class="view-section" style="display: none;">
+      <div style="margin-bottom: 1.5rem;">
+        <span class="eyebrow">Monthly Operations Performance</span>
+        <h3 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 700;">Báo Cáo Tổng Hợp Sản Lượng Theo Tháng (Tháng 6, Tháng 7, Tháng 8)</h3>
+      </div>
+
+      <div class="bento-grid">
+        <div class="bento-span-6 doppel-outer">
+          <div class="doppel-inner">
+            <div class="kpi-head">
+              <span class="kpi-title">SO SÁNH SẢN LƯỢNG CƯỚC (CW) CÁC THÁNG</span>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="monthlyCwChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="bento-span-6 doppel-outer">
+          <div class="doppel-inner">
+            <div class="kpi-head">
+              <span class="kpi-title">TOP HÃNG VẬN TẢI THEO THÁNG (CARRIER MARKET SHARE)</span>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="carrierMarketChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Table -->
+      <div class="doppel-outer" style="margin-top: 1.5rem;">
+        <div class="doppel-inner">
+          <h4 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 1rem; color: #a78bfa;">Bảng Báo Cáo Tổng Hợp Theo Tháng</h4>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>THÁNG</th>
+                  <th>SỐ CHUYẾN BAY KHAI THÁC</th>
+                  <th>SỐ LÔ HÀNG</th>
+                  <th>SỐ KIỆN (PCS)</th>
+                  <th>GW (KG)</th>
+                  <th>CW (KG)</th>
+                  <th>THỂ TÍCH (CBM)</th>
+                  <th>CW/GW RATIO</th>
+                </tr>
+              </thead>
+              <tbody id="monthlyTableBody">
+                <tr><td colspan="8" style="text-align: center; padding: 2rem; color: #64748b;">Đang tổng hợp dữ liệu theo tháng...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: MASTER DETAIL SEARCH VIEW -->
+    <section id="detailViewSection" class="view-section" style="display: none;">
+      <!-- Search & Control Bar -->
+      <section class="control-bar">
+        <div class="search-box">
+          <i class="ph ph-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Tìm nhanh theo MAWB (VD: 978-2389), Chuyến bay, Agent, Điểm đến...">
+        </div>
+
+        <select id="flightFilter" class="filter-select"><option value="">Tất cả Chuyến Bay</option></select>
+        <select id="agentFilter" class="filter-select"><option value="">Tất cả Đại Lý</option></select>
+        <select id="destFilter" class="filter-select"><option value="">Tất cả Điểm Đến</option></select>
+
+        <button class="pill-btn" id="exportBtn">
+          <span>Xuất CSV</span>
+          <div class="icon-circle"><i class="ph ph-download-simple"></i></div>
+        </button>
+      </section>
+
+      <!-- Data Table Double-Bezel Architecture -->
+      <section class="doppel-outer">
+        <div class="doppel-inner">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>SỐ VẬN ĐƠN (MAWB)</th>
+                  <th>CHUYẾN BAY</th>
+                  <th>NGÀY BAY</th>
+                  <th>ĐIỂM ĐẾN (DEST)</th>
+                  <th>ĐẠI LÝ (AGENT)</th>
+                  <th>SỐ KIỆN (PCS)</th>
+                  <th>GW (KG)</th>
+                  <th>CW (KG)</th>
+                  <th>CBM</th>
+                  <th>GHI CHÚ / BẢO QUẢN</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr><td colspan="11" style="text-align: center; padding: 3rem; color: #64748b;">Đang tải dữ liệu master plan...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="pagination-bar">
+            <span id="paginationInfo">Hiển thị 0 - 0 trong tổng số 0 bản ghi</span>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="page-btn" id="prevPageBtn" disabled><i class="ph ph-caret-left"></i> Trang trước</button>
+              <button class="page-btn" id="nextPageBtn" disabled>Trang sau <i class="ph ph-caret-right"></i></button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Loại trừ file Excel gốc - không commit lên GitHub
+*.xlsx
+*.xls
+
+# Dependencies
+node_modules/
+
+# Logs & temp
+*.log
+scratch/
+.system_generated/
+deploy_setup.js
+watch_and_sync.js

@@ -1,0 +1,19 @@
+{
+  "name": "loading-plan-hub",
+  "version": "1.0.0",
+  "description": "Master Air Cargo Loading Plan Dashboard & Analytics Engine for Vercel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "air-cargo",
+    "logistics",
+    "loading-plan",
+    "dashboard",
+    "vercel"
+  ],
+  "author": "vianphm11",
+  "license": "MIT"
+}
