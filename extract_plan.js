@@ -37,9 +37,14 @@ function canonicalize(header) {
 }
 
 function extractCarrier(flight) {
-  if (!flight) return '';
-  const m = String(flight).trim().match(/^([A-Z0-9]{2,3})\s*\d/i);
-  return m ? m[1].toUpperCase() : '';
+  if (!flight) return { carrier: '', flightNum: '' };
+  const f = String(flight).trim();
+  // Lấy đúng 2 ký tự đầu làm hãng (carrier), phần còn lại làm số hiệu chuyến bay
+  const m = f.match(/^([A-Za-z0-9]{2})\s*(.*)$/);
+  if (m) {
+    return { carrier: m[1].toUpperCase(), flightNum: m[2].trim() };
+  }
+  return { carrier: '', flightNum: f };
 }
 
 function extractDest(rawDest, routing) {
@@ -76,8 +81,10 @@ function mapRow(rawRow, colMap, sheetName, fileName) {
     rec[field] = rawRow[colIdx] !== undefined ? rawRow[colIdx] : '';
   });
 
-  const flight = cleanText(rec.flight);
-  const carrier = extractCarrier(flight);
+  const rawFlight = cleanText(rec.flight);
+  const fInfo = extractCarrier(rawFlight);
+  const carrier = fInfo.carrier;
+  const flight = fInfo.flightNum;
 
   const dest = extractDest(cleanText(rec.dest), cleanText(rec.connection));
   let org = cleanText(rec.org);

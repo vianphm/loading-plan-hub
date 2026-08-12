@@ -561,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = getSalesData();
     populateSalesMonthFilter();
     renderRegionalDonut(data);
+    renderSalesTeamLeaderboard(data); // New
     renderCustomerLeaderboard(data);
     renderDestinationIntel(data);
     renderRouteMatrix(data);
@@ -569,12 +570,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('salesMonthFilter')?.addEventListener('change', () => {
       const d = getSalesData();
       renderRegionalDonut(d);
+      renderSalesTeamLeaderboard(d);
       renderCustomerLeaderboard(d);
       renderDestinationIntel(d);
       renderRouteMatrix(d);
     });
     document.getElementById('salesRegionFilter')?.addEventListener('change', () => {
       const d = getSalesData();
+      renderSalesTeamLeaderboard(d);
       renderCustomerLeaderboard(d);
       renderDestinationIntel(d);
       renderRouteMatrix(d);
@@ -770,6 +773,50 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>`).join('');
     }
+  }
+
+  function renderSalesTeamLeaderboard(data) {
+    const el = document.getElementById('salesTeamLeaderboard');
+    if (!el) return;
+
+    const compMap = {};
+    data.forEach(r => {
+      const c = r.company || 'Unknown';
+      compMap[c] = (compMap[c] || 0) + (r.cw || 0);
+    });
+
+    const sorted = Object.entries(compMap).sort((a,b) => b[1]-a[1]);
+    const maxCw = sorted[0]?.[1] || 1;
+    const totalCw = data.reduce((s,r) => s + r.cw, 0);
+
+    if (!sorted.length) {
+      el.innerHTML = '<div style="color:#64748b; text-align:center; padding: 2rem;">Không có dữ liệu</div>';
+      return;
+    }
+
+    el.innerHTML = sorted.map(([comp, cw], i) => {
+      const pct = (cw / maxCw * 100).toFixed(1);
+      const share = ((cw / totalCw) * 100).toFixed(1);
+      const color = i === 0 ? '#f59e0b' : i === 1 ? '#38bdf8' : i === 2 ? '#10b981' : '#64748b';
+      
+      return `
+        <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span style="font-size: 0.8rem; font-weight: 800; color: ${color}; width: 14px;">#${i+1}</span>
+              <span style="font-size: 0.9rem; font-weight: 700; color: #f1f5f9;">${comp}</span>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: ${color};">${Math.round(cw).toLocaleString('vi-VN')} kg</div>
+              <div style="font-size: 0.65rem; color: #94a3b8;">${share}% Share</div>
+            </div>
+          </div>
+          <div style="height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;">
+            <div style="height: 100%; width: ${pct}%; background: ${color}; border-radius: 2px;"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   function renderCustomerLeaderboard(data) {
