@@ -69,10 +69,13 @@
       <!-- View Switcher Tabs -->
       <div class="view-switcher">
         <button class="tab-btn active" data-view="weekly">
-          <i class="ph ph-calendar-blank"></i> Theo Dõi Theo Tuần
+          <i class="ph ph-calendar-blank"></i> Báo Cáo Tuần
         </button>
         <button class="tab-btn" data-view="monthly">
-          <i class="ph ph-calendar-plus"></i> Theo Dõi Theo Tháng
+          <i class="ph ph-calendar-plus"></i> Báo Cáo Tháng
+        </button>
+        <button class="tab-btn" data-view="prospecting" style="color: var(--accent-blue);">
+          <i class="ph-fill ph-target"></i> CÔNG CỤ SĂN SALES
         </button>
         <button class="tab-btn" data-view="sales">
           <i class="ph ph-chart-pie-slice"></i> Sales Intelligence
@@ -263,7 +266,47 @@
       </div>
     </section>
 
-    <!-- SECTION 3: SALES INTELLIGENCE VIEW -->
+    <!-- SECTION 3: PROSPECTING TOOL -->
+    <section id="prospectingViewSection" class="view-section" style="display: none;">
+      <div class="doppel-outer" style="margin-bottom: 1.5rem;">
+        <div class="doppel-inner" style="background: linear-gradient(145deg, rgba(15,23,42,0.6) 0%, rgba(15,23,42,0.9) 100%);">
+          <div style="margin-bottom: 1.5rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h2 style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; display:flex; align-items:center; gap:8px;">
+                <i class="ph-fill ph-target"></i> CÔNG CỤ SĂN SALES (PROSPECTING)
+              </h2>
+              <p style="font-size:0.8rem; color:#94a3b8; margin-top:4px;">Tìm kiếm danh sách Đại lý mục tiêu đang gom hàng đi theo Tuyến (Dest) hoặc Hãng bay (Carrier)</p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <select id="prospectRegionFilter" class="filter-select" style="min-width:120px;"><option value="">🌍 Mọi Khu Vực</option></select>
+              <select id="prospectDestFilter" class="filter-select" style="min-width:120px;"><option value="">✈️ Mọi Điểm Đến</option></select>
+              <select id="prospectCarrierFilter" class="filter-select" style="min-width:120px;"><option value="">🏢 Mọi Hãng Bay</option></select>
+              <select id="prospectCompanyFilter" class="filter-select" style="min-width:120px;"><option value="">🏭 Mọi Sheet (F1, FE...)</option></select>
+              <select id="prospectSortFilter" class="filter-select" style="min-width:120px;">
+                <option value="cw">⬇️ Sắp xếp: CW</option>
+                <option value="pcs">⬇️ Sắp xếp: Lô Hàng</option>
+                <option value="cbm">⬇️ Sắp xếp: Thể Tích</option>
+              </select>
+              <button id="btnProspect" class="pill-btn" style="background: var(--accent-blue);">
+                <span>Tìm Kiếm</span>
+                <div class="icon-circle" style="background: rgba(0,0,0,0.2);"><i class="ph ph-magnifying-glass"></i></div>
+              </button>
+            </div>
+          </div>
+          
+          <div style="background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); padding: 15px; min-height: 150px;">
+            <div id="prospectingResults">
+              <div style="padding: 3rem; text-align: center; color: #64748b;">
+                <i class="ph ph-target" style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+                <p>Chọn Tiêu chí (Tuyến / Hãng / Company) và bấm "Tìm Kiếm" để lọc danh sách khách hàng mục tiêu.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: SALES INTELLIGENCE VIEW -->
     <section id="salesViewSection" class="view-section" style="display: none;">
       <div style="margin-bottom: 1.5rem;">
         <span class="eyebrow">Customer & Market Intelligence · Sales Optimization</span>
@@ -290,46 +333,6 @@
           <span>Xuất Sales Report</span>
           <div class="icon-circle"><i class="ph ph-download-simple"></i></div>
         </button>
-      </div>
-
-      <!-- PROSPECTING / SĂN SALES -->
-      <div class="bento-grid" style="margin-bottom: 1.5rem;">
-        <div class="bento-span-12 doppel-outer">
-          <div class="doppel-inner" style="background: linear-gradient(145deg, #0f172a, #0a0f1e); border: 1px solid #38bdf844;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
-              <div>
-                <h2 style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; display:flex; align-items:center; gap:8px;">
-                  <i class="ph-fill ph-target"></i> CÔNG CỤ SĂN SALES (PROSPECTING)
-                </h2>
-                <p style="font-size:0.8rem; color:#94a3b8; margin-top:4px;">Tìm kiếm danh sách Đại lý mục tiêu đang gom hàng đi theo Tuyến (Dest) hoặc Hãng bay (Carrier)</p>
-              </div>
-              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                <select id="prospectRegionFilter" class="filter-select" style="min-width:120px;"><option value="">🌍 Mọi Khu Vực</option></select>
-                <select id="prospectDestFilter" class="filter-select" style="min-width:120px;"><option value="">✈️ Mọi Điểm Đến</option></select>
-                <select id="prospectCarrierFilter" class="filter-select" style="min-width:120px;"><option value="">🏢 Mọi Hãng Bay</option></select>
-                <select id="prospectCompanyFilter" class="filter-select" style="min-width:120px;"><option value="">🏭 Mọi Sheet (F1, FE...)</option></select>
-                <select id="prospectSortFilter" class="filter-select" style="min-width:120px;">
-                  <option value="cw">⬇️ Sắp xếp: CW</option>
-                  <option value="pcs">⬇️ Sắp xếp: Lô Hàng</option>
-                  <option value="cbm">⬇️ Sắp xếp: Thể Tích</option>
-                </select>
-                <button id="btnProspect" class="pill-btn" style="background: var(--accent-blue);">
-                  <span>Tìm Kiếm</span>
-                  <div class="icon-circle" style="background: rgba(0,0,0,0.2);"><i class="ph ph-magnifying-glass"></i></div>
-                </button>
-              </div>
-            </div>
-            
-            <div style="background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); padding: 15px; min-height: 150px;">
-              <div id="prospectingResults">
-                <div style="padding: 3rem; text-align: center; color: #64748b;">
-                  <i class="ph ph-target" style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;"></i>
-                  <p>Chọn Tiêu chí (Tuyến / Hãng / Company) và bấm "Tìm Kiếm" để lọc danh sách khách hàng mục tiêu.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Row 1: Regional Donut + Customer Leaderboard -->
@@ -420,7 +423,7 @@
       </div>
     </section>
 
-    <!-- SECTION 4: MASTER DETAIL SEARCH VIEW -->
+    <!-- SECTION 99: MASTER DATA TABLE SEARCH VIEW -->
     <section id="detailViewSection" class="view-section" style="display: none;">
       <!-- Search & Control Bar -->
       <section class="control-bar">

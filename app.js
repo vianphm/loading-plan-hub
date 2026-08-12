@@ -132,6 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
       monthlyViewSection.style.display = view === 'monthly' ? 'block' : 'none';
       salesViewSection.style.display = view === 'sales' ? 'block' : 'none';
       detailViewSection.style.display = view === 'detail' ? 'block' : 'none';
+      
+      const prospectSection = document.getElementById('prospectingViewSection');
+      if (prospectSection) prospectSection.style.display = view === 'prospecting' ? 'block' : 'none';
 
       if (view === 'weekly') renderWeeklyAnalytics();
       if (view === 'monthly') renderMonthlyAnalytics();
@@ -1115,16 +1118,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Sản Lượng Theo Tháng</h4>
           <table class="modern-table">
             <tbody>
-              ${sortedMonths.map(([m, cw]) => `<tr><td>${m}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+              ${sortedMonths.slice(0, 12).map(([m, cw]) => `<tr><td>${m}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
             </tbody>
           </table>
         </div>
         <!-- Điểm Đến -->
         <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Điểm Đến (Dest) Top</h4>
+          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Điểm Đến (Dest) Top 15</h4>
           <table class="modern-table">
             <tbody>
-              ${sortedDests.map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+              ${sortedDests.slice(0, 15).map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
             </tbody>
           </table>
         </div>
@@ -1133,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Ưa Chuộng</h4>
           <table class="modern-table">
             <tbody>
-              ${sortedCarriers.map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+              ${sortedCarriers.slice(0, 15).map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
             </tbody>
           </table>
         </div>
@@ -1190,19 +1193,19 @@ document.addEventListener('DOMContentLoaded', () => {
         <div>
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Top Khách Hàng Của Team</h4>
           <table class="modern-table"><tbody>
-            ${sortedAgents.slice(0,10).map(([a, cw]) => `<tr><td>${a}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+            ${sortedAgents.slice(0, 15).map(([a, cw]) => `<tr><td>${a}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
           </tbody></table>
         </div>
         <div>
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Tuyến Bay (Dest) Chủ Lực</h4>
           <table class="modern-table"><tbody>
-            ${sortedDests.map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+            ${sortedDests.slice(0, 15).map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
           </tbody></table>
         </div>
         <div>
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Ưa Chuộng</h4>
           <table class="modern-table"><tbody>
-            ${sortedCarriers.map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+            ${sortedCarriers.slice(0, 15).map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
           </tbody></table>
         </div>
       </div>
@@ -1256,19 +1259,19 @@ document.addEventListener('DOMContentLoaded', () => {
         <div>
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Top Khách Hàng (Agent) Tuyến Này</h4>
           <table class="modern-table"><tbody>
-            ${sortedAgents.slice(0,10).map(([a, cw]) => `<tr><td>${a}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+            ${sortedAgents.slice(0, 15).map(([a, cw]) => `<tr><td>${a}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
           </tbody></table>
         </div>
         <div>
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Sales Team Bán Mạnh Tuyến Này</h4>
           <table class="modern-table"><tbody>
-            ${sortedComps.map(([c, cw]) => `<tr><td>${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+            ${sortedComps.slice(0, 15).map(([c, cw]) => `<tr><td>${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
           </tbody></table>
         </div>
         <div>
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Tuyến Này</h4>
           <table class="modern-table"><tbody>
-            ${sortedCarriers.map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+            ${sortedCarriers.slice(0, 15).map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
           </tbody></table>
         </div>
       </div>
@@ -1332,7 +1335,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div>
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Các Điểm Đến (Dest) Thuộc Vùng</h4>
           <table class="modern-table"><tbody>
-            ${sortedDests.map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+            ${sortedDests.slice(0, 15).map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
           </tbody></table>
         </div>
         <div>
