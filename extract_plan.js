@@ -94,9 +94,10 @@ function mapRow(rawRow, colMap, sheetName, fileName) {
   }
 
   const gw  = parseWeight(rec.gw);
-  const cw  = parseWeight(rec.cw) || gw;
+  const cw  = parseWeight(rec.cw) || gw; // Fallback to GW if no CW
+  // Theo quy tắc Hàng không (Air Freight), user yêu cầu Thể tích (CBM) = CW * 0.006
   const cbm = cw * 0.006;
-  const pcs = parseInt(String(rec.pcs || '0').replace(/[^0-9]/g, ''), 10) || 0;
+  const pcs = parseInt(String(rec.pcs).trim(), 10) || 0;
 
   const agent = cleanText(rec.agent);
   const awb = cleanText(rec.awb);
