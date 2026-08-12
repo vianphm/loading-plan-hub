@@ -782,11 +782,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const compMap = {};
     data.forEach(r => {
       const c = r.company || 'Unknown';
-      compMap[c] = (compMap[c] || 0) + (r.cw || 0);
+      if (!compMap[c]) compMap[c] = { cw: 0, count: 0 };
+      compMap[c].cw += (r.cw || 0);
+      compMap[c].count += 1;
     });
 
-    const sorted = Object.entries(compMap).sort((a,b) => b[1]-a[1]);
-    const maxCw = sorted[0]?.[1] || 1;
+    const sorted = Object.entries(compMap).sort((a,b) => b[1].cw - a[1].cw);
+    const maxCw = sorted[0]?.[1]?.cw || 1;
     const totalCw = data.reduce((s,r) => s + r.cw, 0);
 
     if (!sorted.length) {
@@ -794,7 +796,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    el.innerHTML = sorted.map(([comp, cw], i) => {
+    el.innerHTML = sorted.map(([comp, info], i) => {
+      const cw = info.cw;
+      const count = info.count;
       const pct = (cw / maxCw * 100).toFixed(1);
       const share = ((cw / totalCw) * 100).toFixed(1);
       const color = i === 0 ? '#f59e0b' : i === 1 ? '#38bdf8' : i === 2 ? '#10b981' : '#64748b';
@@ -808,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div style="text-align: right;">
               <div style="font-size: 0.85rem; font-weight: 700; color: ${color};">${Math.round(cw).toLocaleString('vi-VN')} kg</div>
-              <div style="font-size: 0.65rem; color: #94a3b8;">${share}% Share</div>
+              <div style="font-size: 0.65rem; color: #94a3b8;">${count} lô | ${share}% Share</div>
             </div>
           </div>
           <div style="height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;">
