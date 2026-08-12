@@ -255,19 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
       totalCbm += Number(item.cbm) || 0;
     });
 
-    const ratio = totalGw > 0 ? (totalCw / totalGw).toFixed(2) : '0.00';
-
     document.getElementById('kpiTotalRecords').textContent = filteredData.length.toLocaleString('vi-VN');
     document.getElementById('kpiTotalGw').textContent = Math.round(totalGw).toLocaleString('vi-VN') + ' KG';
     document.getElementById('kpiTotalCw').textContent = Math.round(totalCw).toLocaleString('vi-VN') + ' KG';
-    document.getElementById('kpiCwGwRatio').textContent = ratio;
-    
-    const subEl = document.getElementById('kpiCwGwSub');
-    if (subEl) {
-      subEl.textContent = Number(ratio) >= 1.0 
-        ? 'Hàng cồng kềnh/tính cước thể tích (CW > GW)' 
-        : 'Hàng đặc/trọng lượng thực (GW > CW)';
-    }
 
     document.getElementById('kpiTotalCbm').textContent = totalCbm.toFixed(2) + ' m³';
   }
