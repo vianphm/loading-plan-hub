@@ -833,12 +833,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
       return `
         <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-            <div style="display:flex; align-items:center; gap: 8px;">
-              <span style="font-size: 0.8rem; font-weight: 800; color: ${color}; width: 14px;">#${i+1}</span>
-              <span style="font-size: 0.9rem; font-weight: 700; color: #f1f5f9; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#f1f5f9'" onclick="openCompanyDetail('${comp}')">${comp}</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; gap:8px;">
+            <div style="display:flex; align-items:center; gap: 8px; flex: 1; min-width: 0;">
+              <span style="font-size: 0.8rem; font-weight: 800; color: ${color}; width: 14px; flex-shrink:0;">#${i+1}</span>
+              <span style="font-size: 0.9rem; font-weight: 700; color: #f1f5f9; cursor:pointer; transition:all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${comp}" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#f1f5f9'" onclick="openCompanyDetail('${comp}')">${comp}</span>
             </div>
-            <div style="text-align: right;">
+            <div style="text-align: right; flex-shrink: 0;">
               <div style="font-size: 0.85rem; font-weight: 700; color: ${color};">${Math.round(cw).toLocaleString('vi-VN')} kg</div>
               <div style="font-size: 0.65rem; color: #94a3b8;">${count} lô | ${share}% Share</div>
             </div>
@@ -900,9 +900,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
           <div style="padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;align-items:center;margin-bottom:6px;">
-              <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-size:0.7rem;color:#475569;font-weight:600;width:18px;">${i+1}</span>
-                <div>
+              <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                <span style="font-size:0.7rem;color:#475569;font-weight:600;width:18px;flex-shrink:0;">${i+1}</span>
+                <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${agent}">
                   <span style="font-size:0.85rem;font-weight:700;color:#f1f5f9;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#f1f5f9'" onclick="openAgentDetail('${agent.replace(/'/g, "\\'")}')">${agent}</span>
                   <span style="font-size:0.65rem;font-weight:600;color:${tier.color};margin-left:6px;">${tier.label}</span>
                 </div>
