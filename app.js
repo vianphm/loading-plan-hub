@@ -754,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
           <div style="display:flex;align-items:center;gap:8px;">
             <div style="width:10px;height:10px;border-radius:50%;background:${REGION_COLOR[region]||'#64748b'};flex-shrink:0;"></div>
-            <span style="font-size:0.75rem;font-weight:600;color:#e2e8f0;">${region}</span>
+            <span style="font-size:0.75rem;font-weight:600;color:#e2e8f0;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#e2e8f0'" onclick="openRegionDetail('${region}')">${region}</span>
           </div>
           <div style="text-align:right;">
             <span style="font-size:0.75rem;color:${REGION_COLOR[region]||'#64748b'};font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</span>
@@ -1230,6 +1230,82 @@ document.addEventListener('DOMContentLoaded', () => {
           <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Tuyến Này</h4>
           <table class="modern-table"><tbody>
             ${sortedCarriers.map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+      </div>
+    `;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  // === Region Details Modal Logic ===
+  window.openRegionDetail = function(regionName) {
+    const modal = document.getElementById('fullscreenModal');
+    const modalTitle = document.getElementById('modalTitleText');
+    const modalBody = document.getElementById('modalBody');
+    if (!modal) return;
+    
+    modalTitle.textContent = `Phân Tích Vùng (Region): ${regionName}`;
+    
+    // Aggregate Data for this region
+    const regionData = masterData.filter(r => {
+      const reg = REGION_MAP[r.dest] || 'Other';
+      return reg === regionName && r.cw > 0;
+    });
+    
+    let totalCw = 0;
+    let totalPcs = 0;
+    const destMap = {};
+    const agentMap = {};
+    const carrierMap = {};
+    
+    regionData.forEach(r => {
+      totalCw += r.cw;
+      totalPcs += r.pcs || 0;
+      
+      if (r.dest) destMap[r.dest] = (destMap[r.dest] || 0) + r.cw;
+      if (r.agent) agentMap[r.agent] = (agentMap[r.agent] || 0) + r.cw;
+      if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier] || 0) + r.cw;
+    });
+    
+    const sortedDests = Object.entries(destMap).sort((a,b) => b[1]-a[1]);
+    const sortedAgents = Object.entries(agentMap).sort((a,b) => b[1]-a[1]);
+    const sortedCarriers = Object.entries(carrierMap).sort((a,b) => b[1]-a[1]);
+    const totalCbm = totalCw * 0.006;
+    
+    modalBody.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SẢN LƯỢNG (CW)</span>
+          <div style="font-size:1.75rem; color:#38bdf8; font-weight:800; margin-top:4px;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SỐ LÔ</span>
+          <div style="font-size:1.75rem; color:#10b981; font-weight:800; margin-top:4px;">${regionData.length} lô</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">THỂ TÍCH ƯỚC TÍNH (CBM)</span>
+          <div style="font-size:1.75rem; color:#f59e0b; font-weight:800; margin-top:4px;">${Math.round(totalCbm).toLocaleString('vi-VN')} CBM</div>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+        <div>
+          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Các Điểm Đến (Dest) Thuộc Vùng</h4>
+          <table class="modern-table"><tbody>
+            ${sortedDests.map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+        <div>
+          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Top Khách Hàng Bán Vùng Này</h4>
+          <table class="modern-table"><tbody>
+            ${sortedAgents.slice(0,10).map(([a, cw]) => `<tr><td>${a}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+        <div>
+          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Ưa Chuộng</h4>
+          <table class="modern-table"><tbody>
+            ${sortedCarriers.map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
           </tbody></table>
         </div>
       </div>

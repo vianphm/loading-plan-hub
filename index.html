@@ -333,8 +333,11 @@
         <div class="bento-span-3 doppel-outer">
           <div class="doppel-inner" style="height: 100%;">
             <div class="kpi-head">
-              <span class="kpi-title">PHÂN BỔ THEO VÙNG</span>
-              <span class="eyebrow" style="margin:0;">REGION SHARE</span>
+              <div>
+                <span class="kpi-title">PHÂN BỔ THEO VÙNG</span>
+                <span class="eyebrow" style="margin:0;">REGION SHARE</span>
+              </div>
+              <button class="btn-expand" onclick="expandDashboard('PHÂN BỔ THEO VÙNG (REGION SHARE)', 'regionLegend')"><i class="ph ph-arrows-out"></i></button>
             </div>
             <div style="height: 240px; position: relative;">
               <canvas id="regionDonutChart"></canvas>
