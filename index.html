@@ -289,9 +289,10 @@
       </div>
 
       <!-- Sales Filter Bar -->
-      <div class="control-bar" style="margin-bottom: 1.5rem;">
-        <select id="salesMonthFilter" class="filter-select">
-          <option value="">Tất cả tháng</option>
+      <div class="control-bar" style="margin-bottom: 1.5rem; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span style="color: #38bdf8; font-weight: 700; font-size: 0.9rem;"><i class="ph-fill ph-funnel"></i> BỘ LỌC PHÂN TÍCH:</span>
+        <select id="salesMonthFilter" class="filter-select" style="border: 1px solid #38bdf8; background: #0f172a; color: #fff; font-weight: bold;">
+          <option value="">📅 Xem Tất Cả Các Tháng</option>
         </select>
         <select id="salesRegionFilter" class="filter-select">
           <option value="">Tất cả vùng</option>
@@ -303,7 +304,7 @@
           <option value="SE Asia">SE Asia 🌏</option>
           <option value="Oceania">Oceania 🇦🇺</option>
         </select>
-        <button class="pill-btn" id="exportSalesBtn">
+        <button class="pill-btn" id="exportSalesBtn" style="margin-left: auto;">
           <span>Xuất Sales Report</span>
           <div class="icon-circle"><i class="ph ph-download-simple"></i></div>
         </button>
