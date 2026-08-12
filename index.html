@@ -303,10 +303,16 @@
                 </h2>
                 <p style="font-size:0.8rem; color:#94a3b8; margin-top:4px;">Tìm kiếm danh sách Đại lý mục tiêu đang gom hàng đi theo Tuyến (Dest) hoặc Hãng bay (Carrier)</p>
               </div>
-              <div style="display:flex; gap:10px;">
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <select id="prospectRegionFilter" class="filter-select" style="min-width:120px;"><option value="">🌍 Mọi Khu Vực</option></select>
                 <select id="prospectDestFilter" class="filter-select" style="min-width:120px;"><option value="">✈️ Mọi Điểm Đến</option></select>
                 <select id="prospectCarrierFilter" class="filter-select" style="min-width:120px;"><option value="">🏢 Mọi Hãng Bay</option></select>
                 <select id="prospectCompanyFilter" class="filter-select" style="min-width:120px;"><option value="">🏭 Mọi Sheet (F1, FE...)</option></select>
+                <select id="prospectSortFilter" class="filter-select" style="min-width:120px;">
+                  <option value="cw">⬇️ Sắp xếp: CW</option>
+                  <option value="pcs">⬇️ Sắp xếp: Lô Hàng</option>
+                  <option value="cbm">⬇️ Sắp xếp: Thể Tích</option>
+                </select>
                 <button id="btnProspect" class="pill-btn" style="background: var(--accent-blue);">
                   <span>Tìm Kiếm</span>
                   <div class="icon-circle" style="background: rgba(0,0,0,0.2);"><i class="ph ph-magnifying-glass"></i></div>

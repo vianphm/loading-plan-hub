@@ -580,12 +580,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function initProspectingFilters() {
+    const regSel = document.getElementById('prospectRegionFilter');
     const destSel = document.getElementById('prospectDestFilter');
     const carrSel = document.getElementById('prospectCarrierFilter');
     const compSel = document.getElementById('prospectCompanyFilter');
     if (!destSel || destSel.options.length > 1) return; // already inited
 
     const validData = masterData.filter(r => r.cw > 0 && r.agent && r.agent.length >= 2);
+    
+    // Regions
+    if (regSel) {
+      const regions = [...new Set(validData.map(r => REGION_MAP[r.dest] || 'Other'))].sort();
+      regions.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r; opt.textContent = `🌍 ${r}`;
+        regSel.appendChild(opt);
+      });
+    }
     
     // Dests
     const dests = [...new Set(validData.map(r => r.dest).filter(d => /^[A-Z]{3}$/.test(d)))].sort();
@@ -614,23 +625,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderProspecting() {
+    const reg = document.getElementById('prospectRegionFilter')?.value;
     const dest = document.getElementById('prospectDestFilter')?.value;
     const carr = document.getElementById('prospectCarrierFilter')?.value;
     const comp = document.getElementById('prospectCompanyFilter')?.value;
+    const sort = document.getElementById('prospectSortFilter')?.value || 'cw';
     const resEl = document.getElementById('prospectingResults');
     if (!resEl) return;
 
-    if (!dest && !carr && !comp) {
+    if (!reg && !dest && !carr && !comp) {
       resEl.innerHTML = `
         <div style="padding: 3rem; text-align: center; color: #64748b;">
           <i class="ph ph-warning-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-          <p>Vui lòng chọn ít nhất 1 tiêu chí (Tuyến, Hãng hoặc Công ty) để lọc.</p>
+          <p>Vui lòng chọn ít nhất 1 tiêu chí (Khu Vực, Tuyến, Hãng hoặc Công ty) để lọc.</p>
         </div>`;
       return;
     }
 
     const data = masterData.filter(r => {
       if (r.cw <= 0 || !r.agent || r.agent.length < 2) return false;
+      const rRegion = REGION_MAP[r.dest] || 'Other';
+      if (reg && rRegion !== reg) return false;
       if (dest && r.dest !== dest) return false;
       if (carr && r.carrier !== carr) return false;
       if (comp && r.company !== comp) return false;
@@ -649,15 +664,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const agentMap = {};
     data.forEach(r => {
       const a = r.agent.trim().toUpperCase();
-      if (!agentMap[a]) agentMap[a] = { cw: 0, count: 0, carriers: {}, dests: {}, companies: {} };
+      if (!agentMap[a]) agentMap[a] = { cw: 0, count: 0, cbm: 0, carriers: {}, dests: {}, companies: {} };
       agentMap[a].cw += r.cw || 0;
+      agentMap[a].cbm += (r.cw || 0) * 0.006;
       agentMap[a].count++;
       if (r.carrier) agentMap[a].carriers[r.carrier] = (agentMap[a].carriers[r.carrier] || 0) + (r.cw || 0);
       if (r.dest) agentMap[a].dests[r.dest] = (agentMap[a].dests[r.dest] || 0) + (r.cw || 0);
       if (r.company) agentMap[a].companies[r.company] = (agentMap[a].companies[r.company] || 0) + (r.cw || 0);
     });
 
-    const sorted = Object.entries(agentMap).sort((a,b) => b[1].cw - a[1].cw);
+    const sorted = Object.entries(agentMap).sort((a,b) => {
+      if (sort === 'pcs') return b[1].count - a[1].count;
+      if (sort === 'cbm') return b[1].cbm - a[1].cbm;
+      return b[1].cw - a[1].cw;
+    });
 
     let html = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
