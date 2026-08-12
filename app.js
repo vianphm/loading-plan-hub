@@ -679,22 +679,40 @@ document.addEventListener('DOMContentLoaded', () => {
       return b[1].cw - a[1].cw;
     });
 
+    const totalTargetCw = data.reduce((s,r)=>s+(r.cw||0),0);
+    const totalTargetPcs = data.reduce((s,r)=>s+(r.pcs||0),0);
+    const totalTargetCbm = totalTargetCw * 0.006;
+
     let html = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-        <h4 style="color:#e2e8f0; margin:0; font-size:1rem;">Khách hàng Tiềm năng (Top ${sorted.length})</h4>
-        <span style="background:var(--accent-blue); color:#fff; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:700;">
-          TỔNG SẢN LƯỢNG MỤC TIÊU: ${Math.round(data.reduce((s,r)=>s+r.cw,0)).toLocaleString('vi-VN')} kg
-        </span>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align:center;">
+          <span style="font-size:0.7rem; color:#94a3b8; font-weight:700; display:block; margin-bottom:4px;">KHÁCH HÀNG TIỀM NĂNG</span>
+          <div style="font-size:1.75rem; color:#38bdf8; font-weight:800;">${sorted.length}</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align:center;">
+          <span style="font-size:0.7rem; color:#94a3b8; font-weight:700; display:block; margin-bottom:4px;">TỔNG SẢN LƯỢNG MỤC TIÊU</span>
+          <div style="font-size:1.75rem; color:#10b981; font-weight:800;">${Math.round(totalTargetCw).toLocaleString('vi-VN')} <span style="font-size:1rem;color:#64748b;">kg</span></div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align:center;">
+          <span style="font-size:0.7rem; color:#94a3b8; font-weight:700; display:block; margin-bottom:4px;">TỔNG LÔ (PCS)</span>
+          <div style="font-size:1.75rem; color:#f472b6; font-weight:800;">${totalTargetPcs} <span style="font-size:1rem;color:#64748b;">lô</span></div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align:center;">
+          <span style="font-size:0.7rem; color:#94a3b8; font-weight:700; display:block; margin-bottom:4px;">THỂ TÍCH ƯỚC TÍNH</span>
+          <div style="font-size:1.75rem; color:#f59e0b; font-weight:800;">${Math.round(totalTargetCbm).toLocaleString('vi-VN')} <span style="font-size:1rem;color:#64748b;">CBM</span></div>
+        </div>
       </div>
+
       <table class="modern-table">
         <thead>
           <tr>
-            <th>#</th>
+            <th style="width:40px;">#</th>
             <th>Tên Đại Lý (Agent)</th>
-            <th style="text-align:right;">Tổng CW Target</th>
-            <th style="text-align:right;">Số Lô</th>
-            <th>Công Ty (Sheet)</th>
-            <th>Hãng Bay Ưa Chuộng</th>
+            <th style="text-align:right;">Sản Lượng (CW)</th>
+            <th style="text-align:right;">Lô (PCS)</th>
+            <th style="text-align:right;">CBM</th>
+            <th>Nhóm Công Ty</th>
+            <th>Hãng Bay Thường Xuyên</th>
             <th>Tuyến Ưa Chuộng</th>
           </tr>
         </thead>
@@ -708,13 +726,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const ai = AIRPORT_INFO[topDest];
       
       html += `
-        <tr>
+        <tr onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
           <td style="color:#64748b; font-weight:700;">${idx+1}</td>
-          <td style="font-weight:700; color:#38bdf8; font-size:1.1rem;">${agent}</td>
+          <td style="font-weight:700; color:#38bdf8; font-size:1.05rem; cursor:pointer;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'" onclick="openAgentDetail('${agent.replace(/'/g, "\\'")}')">${agent}</td>
           <td style="text-align:right; font-weight:700; color:#10b981;">${Math.round(info.cw).toLocaleString('vi-VN')} kg</td>
           <td style="text-align:right; color:#94a3b8;">${info.count}</td>
-          <td style="color:#f59e0b; font-weight:600;"><i class="ph-fill ph-factory"></i> ${topComp}</td>
-          <td style="color:#e2e8f0; font-weight:600;"><i class="ph-fill ph-airplane-tilt"></i> ${topCarr}</td>
+          <td style="text-align:right; color:#f59e0b; font-weight:600;">${info.cbm.toFixed(1)}</td>
+          <td style="color:#e2e8f0; font-size:0.8rem;"><i class="ph-fill ph-factory" style="color:#64748b;"></i> ${topComp}</td>
+          <td style="color:#e2e8f0; font-weight:600;"><i class="ph-fill ph-airplane-tilt" style="color:#38bdf8;"></i> ${topCarr}</td>
           <td style="color:#e2e8f0; font-weight:600;">${ai?.flag||''} ${topDest}</td>
         </tr>
       `;
