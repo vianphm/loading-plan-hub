@@ -301,10 +301,14 @@
               <p style="font-size:0.8rem; color:#94a3b8; margin-top:4px;">Tìm kiếm danh sách Đại lý mục tiêu đang gom hàng đi theo Tuyến (Dest) hoặc Hãng bay (Carrier)</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-              <select id="prospectRegionFilter" class="filter-select" style="min-width:120px;"><option value="">🌍 Mọi Khu Vực</option></select>
-              <select id="prospectDestFilter" class="filter-select" style="min-width:120px;"><option value="">✈️ Mọi Điểm Đến</option></select>
-              <select id="prospectCarrierFilter" class="filter-select" style="min-width:120px;"><option value="">🏢 Mọi Hãng Bay</option></select>
-              <select id="prospectCompanyFilter" class="filter-select" style="min-width:120px;"><option value="">🏭 Mọi Sheet (F1, FE...)</option></select>
+              <input type="text" id="prospectRegionFilter" class="filter-select" style="min-width:120px;" list="prospectRegionList" placeholder="🌍 Mọi Khu Vực" autocomplete="off">
+              <datalist id="prospectRegionList"></datalist>
+              <input type="text" id="prospectDestFilter" class="filter-select" style="min-width:120px;" list="prospectDestList" placeholder="✈️ Mọi Điểm Đến" autocomplete="off">
+              <datalist id="prospectDestList"></datalist>
+              <input type="text" id="prospectCarrierFilter" class="filter-select" style="min-width:120px;" list="prospectCarrierList" placeholder="🏢 Mọi Hãng Bay" autocomplete="off">
+              <datalist id="prospectCarrierList"></datalist>
+              <input type="text" id="prospectCompanyFilter" class="filter-select" style="min-width:120px;" list="prospectCompanyList" placeholder="🏭 Mọi Sheet (F1, FE...)" autocomplete="off">
+              <datalist id="prospectCompanyList"></datalist>
               <select id="prospectSortFilter" class="filter-select" style="min-width:120px;">
                 <option value="cw">⬇️ Sắp xếp: CW</option>
                 <option value="pcs">⬇️ Sắp xếp: Lô Hàng</option>

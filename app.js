@@ -692,55 +692,62 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function initProspectingFilters() {
-    const regSel = document.getElementById('prospectRegionFilter');
-    const destSel = document.getElementById('prospectDestFilter');
-    const carrSel = document.getElementById('prospectCarrierFilter');
-    const compSel = document.getElementById('prospectCompanyFilter');
-    if (!destSel || destSel.options.length > 1) return; // already inited
+    // Text inputs with a <datalist> of known values - lets a user type a value freehand
+    // (e.g. one not in the current dataset yet) instead of being locked to a <select>'s
+    // fixed option list, while still offering the same autocomplete suggestions as before.
+    const regList = document.getElementById('prospectRegionList');
+    const destList = document.getElementById('prospectDestList');
+    const carrList = document.getElementById('prospectCarrierList');
+    const compList = document.getElementById('prospectCompanyList');
+    if (!destList || destList.children.length > 0) return; // already inited
 
     const validData = masterData.filter(r => r.cw > 0 && r.agent && r.agent.length >= 2);
-    
+
     // Regions
-    if (regSel) {
+    if (regList) {
       const regions = [...new Set(validData.map(r => REGION_MAP[r.dest] || 'Other'))].sort();
       regions.forEach(r => {
         const opt = document.createElement('option');
-        opt.value = r; opt.textContent = `🌍 ${r}`;
-        regSel.appendChild(opt);
+        opt.value = r;
+        regList.appendChild(opt);
       });
     }
-    
+
     // Dests
     const dests = [...new Set(validData.map(r => r.dest).filter(d => /^[A-Z]{3}$/.test(d)))].sort();
     dests.forEach(d => {
       const opt = document.createElement('option');
       const ai = AIRPORT_INFO[d];
-      opt.value = d; opt.textContent = ai ? `${ai.flag} ${d} - ${ai.city}` : d;
-      destSel.appendChild(opt);
+      opt.value = d; opt.label = ai ? `${ai.flag} ${d} - ${ai.city}` : d;
+      destList.appendChild(opt);
     });
 
     // Carriers
     const carrs = [...new Set(validData.map(r => r.carrier).filter(c => c && c.length >= 2))].sort();
     carrs.forEach(c => {
       const opt = document.createElement('option');
-      opt.value = c; opt.textContent = `✈️ ${c}`;
-      carrSel.appendChild(opt);
+      opt.value = c;
+      carrList.appendChild(opt);
     });
 
     // Companies (Sheet Names)
     const comps = [...new Set(validData.map(r => r.company).filter(Boolean))].sort();
     comps.forEach(c => {
       const opt = document.createElement('option');
-      opt.value = c; opt.textContent = `🏭 ${c}`;
-      compSel.appendChild(opt);
+      opt.value = c;
+      compList.appendChild(opt);
     });
   }
 
   function renderProspecting() {
-    const reg = document.getElementById('prospectRegionFilter')?.value;
-    const dest = document.getElementById('prospectDestFilter')?.value;
-    const carr = document.getElementById('prospectCarrierFilter')?.value;
-    const comp = document.getElementById('prospectCompanyFilter')?.value;
+    // Filters are now freehand text inputs (with a <datalist> of suggestions) rather than
+    // <select>s, so a typed value's case/spacing may not exactly match the stored data -
+    // trim + case-fold before comparing instead of the old strict ===.
+    const norm = (s) => (s || '').trim().toUpperCase();
+    const reg = norm(document.getElementById('prospectRegionFilter')?.value);
+    const dest = norm(document.getElementById('prospectDestFilter')?.value);
+    const carr = norm(document.getElementById('prospectCarrierFilter')?.value);
+    const comp = norm(document.getElementById('prospectCompanyFilter')?.value);
     const sort = document.getElementById('prospectSortFilter')?.value || 'cw';
     const resEl = document.getElementById('prospectingResults');
     if (!resEl) return;
@@ -757,10 +764,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = masterData.filter(r => {
       if (r.cw <= 0 || !r.agent || r.agent.length < 2) return false;
       const rRegion = REGION_MAP[r.dest] || 'Other';
-      if (reg && rRegion !== reg) return false;
-      if (dest && r.dest !== dest) return false;
-      if (carr && r.carrier !== carr) return false;
-      if (comp && r.company !== comp) return false;
+      if (reg && norm(rRegion) !== reg) return false;
+      if (dest && norm(r.dest) !== dest) return false;
+      if (carr && norm(r.carrier) !== carr) return false;
+      if (comp && norm(r.company) !== comp) return false;
       return true;
     });
 

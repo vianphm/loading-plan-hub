@@ -380,6 +380,14 @@ body {
   color: #fff;
 }
 
+input.filter-select {
+  cursor: text;
+}
+
+input.filter-select::placeholder {
+  color: #64748b;
+}
+
 /* Button-in-Button Trailing Icon CTA */
 .pill-btn {
   display: inline-flex;
