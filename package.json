@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "build": "node vercel_build.js"
   },
   "keywords": [
     "air-cargo",
@@ -15,5 +16,8 @@
     "vercel"
   ],
   "author": "vianphm11",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "xlsx": "^0.18.5"
+  }
 }

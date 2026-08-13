@@ -14,7 +14,7 @@
       const latest = String(data.ts || data.version || '');
       
       const vDisplay = document.getElementById('currentVersionDisplay');
-      if (vDisplay) vDisplay.textContent = 'Version: ' + (data.version || latest);
+      if (vDisplay) vDisplay.textContent = 'Phiên bản: ' + (data.version || latest);
 
       if (!latest) return;
       if (currentVersion === null) {
