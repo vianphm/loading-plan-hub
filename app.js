@@ -24,17 +24,23 @@ window.forceHardReload = function() {
       const data = await r.json();
       const versionStr = data.version || 'v1.1.1';
       const commitStr = data.commit && data.commit !== 'local' ? ` • ${data.commit}` : '';
-      
+      // version.json's "version" number is computed at build time by reading the LAST
+      // COMMITTED version.json and incrementing it - but the incremented value is never
+      // written back to git, so every deploy re-reads the same stale baseline and produces
+      // the identical "next" number. commit (VERCEL_GIT_COMMIT_SHA) is always genuinely
+      // different per deploy, so use it as the real change signal; version stays local-dev-safe.
+      const compareKey = data.commit && data.commit !== 'local' ? data.commit : versionStr;
+
       const vDisplay = document.getElementById('currentVersionDisplay');
       if (vDisplay) {
         vDisplay.innerHTML = `<span style="color:#10b981;font-weight:700;">${versionStr}</span><span style="color:#64748b;">${commitStr}</span>`;
       }
 
       if (currentVersion === null) {
-        currentVersion = versionStr; // first load, set baseline
+        currentVersion = compareKey; // first load, set baseline
         return;
       }
-      if (versionStr !== currentVersion && !bannerShown) {
+      if (compareKey !== currentVersion && !bannerShown) {
         bannerShown = true;
         showUpdateBanner(data);
       }
