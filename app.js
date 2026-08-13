@@ -1,4 +1,55 @@
 // Loading Plan Hub - Weekly & Monthly Logistics Analytics & Auto-Update Engine
+
+// ── AUTO VERSION CHECKER ─────────────────────────────────────────────────────
+// Polls data/version.json every 60s. When version changes → shows update banner.
+(function initVersionChecker() {
+  let currentVersion = null;
+  let bannerShown = false;
+
+  async function checkVersion() {
+    try {
+      const r = await fetch(`data/version.json?_=${Date.now()}`, { cache: 'no-store' });
+      if (!r.ok) return;
+      const data = await r.json();
+      const latest = String(data.ts || data.version || '');
+      if (!latest) return;
+      if (currentVersion === null) {
+        currentVersion = latest; // first load, set baseline
+        return;
+      }
+      if (latest !== currentVersion && !bannerShown) {
+        bannerShown = true;
+        showUpdateBanner();
+      }
+    } catch(e) {}
+  }
+
+  function showUpdateBanner() {
+    const banner = document.createElement('div');
+    banner.id = 'versionUpdateBanner';
+    banner.innerHTML = `
+      <div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f4c35,#065f46);border-bottom:2px solid #10b981;padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;font-family:inherit;">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span style="font-size:1.2rem;">🚀</span>
+          <div>
+            <div style="font-weight:700;color:#34d399;font-size:0.9rem;">Có phiên bản mới!</div>
+            <div style="color:#6ee7b7;font-size:0.78rem;">Web vừa được cập nhật. Nhấn để tải phiên bản mới nhất.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button onclick="window.location.href='/?_='+Date.now()" style="background:#10b981;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:999px;font-weight:700;cursor:pointer;font-size:0.85rem;">↻ Cập nhật ngay</button>
+          <button onclick="this.closest('#versionUpdateBanner').remove()" style="background:rgba(255,255,255,0.1);color:#6ee7b7;border:1px solid rgba(16,185,129,0.3);padding:0.5rem 0.75rem;border-radius:999px;cursor:pointer;font-size:0.85rem;">✕</button>
+        </div>
+      </div>`;
+    document.body.prepend(banner);
+  }
+
+  // Check immediately and then every 60 seconds
+  checkVersion();
+  setInterval(checkVersion, 60000);
+})();
+// ─────────────────────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
   let masterData = [];
   let filteredData = [];
