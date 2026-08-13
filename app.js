@@ -913,7 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const color = i === 0 ? '#f59e0b' : i === 1 ? '#38bdf8' : i === 2 ? '#10b981' : '#64748b';
       
       return `
-        <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
+        <div class="${i >= 15 ? 'hide-in-dashboard' : ''}" style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; gap:8px;">
             <div style="display:flex; align-items:center; gap: 8px; flex: 1; min-width: 0;">
               <span style="font-size: 0.8rem; font-weight: 800; color: ${color}; width: 14px; flex-shrink:0;">#${i+1}</span>
@@ -979,7 +979,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const destLabel = ai ? `${ai.flag} ${topDest}` : topDest;
         const avgCw = Math.round(info.cw / info.count);
         return `
-          <div style="padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+          <div class="${i >= 15 ? 'hide-in-dashboard' : ''}" style="padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;align-items:center;margin-bottom:6px;">
               <div style="display:flex;align-items:center;gap:8px;min-width:0;">
                 <span style="font-size:0.7rem;color:#475569;font-weight:600;width:18px;flex-shrink:0;">${i+1}</span>
@@ -1022,7 +1022,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const color = REGION_COLOR[region] || '#64748b';
       const pct = (info.cw / maxCw * 100).toFixed(1);
       return `
-        <div style="padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+        <div class="${i >= 15 ? 'hide-in-dashboard' : ''}" style="padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <div style="display:flex;align-items:center;gap:10px;">
               <span style="font-size:1.4rem;line-height:1;">${ai.flag}</span>

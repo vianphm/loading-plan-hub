@@ -1,4 +1,4 @@
-﻿/* Toast Notification System */
+/* Toast Notification System */
 .toast-notification {
   position: fixed;
   top: 1.5rem;
@@ -677,4 +677,12 @@ body {
 }
 .modern-table tr:hover td {
   background: rgba(255,255,255,0.03);
+}
+
+/* Hide extra items in dashboard view, show them when expanded in modal */
+.hide-in-dashboard {
+  display: none !important;
+}
+.modal-overlay.active .hide-in-dashboard {
+  display: block !important;
 }
