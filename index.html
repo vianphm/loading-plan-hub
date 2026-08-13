@@ -357,7 +357,7 @@
 
         <!-- Sales Team Performance -->
         <div class="bento-span-3 doppel-outer">
-          <div class="doppel-inner" style="height: 100%;">
+          <div class="doppel-inner" style="height: 100%; display:flex; flex-direction:column;">
             <div class="kpi-head">
               <div>
                 <span class="kpi-title">SALES TEAM PERFORMANCE</span>
@@ -365,7 +365,7 @@
               </div>
               <button class="btn-expand" onclick="expandDashboard('SALES TEAM PERFORMANCE', 'salesTeamLeaderboard')"><i class="ph ph-arrows-out"></i></button>
             </div>
-            <div id="salesTeamLeaderboard" style="margin-top: 1rem; overflow-y: auto; max-height: 250px;">
+            <div id="salesTeamLeaderboard" style="margin-top: 1rem; overflow-y: auto; flex: 1; min-height: 480px;">
               <div style="color:#64748b; text-align:center; padding: 2rem;">Đang tải dữ liệu...</div>
             </div>
           </div>
@@ -373,7 +373,7 @@
 
         <!-- Customer Leaderboard -->
         <div class="bento-span-6 doppel-outer">
-          <div class="doppel-inner">
+          <div class="doppel-inner" style="display:flex; flex-direction:column;">
             <div class="kpi-head" style="margin-bottom: 1rem;">
               <span class="kpi-title">TOP KHÁCH HÀNG (AGENT LEADERBOARD)</span>
               <div style="display:flex; gap: 0.5rem; align-items: center;">
@@ -385,7 +385,7 @@
                 <button class="btn-expand" onclick="expandDashboard('TOP KHÁCH HÀNG (AGENT LEADERBOARD)', 'agentLeaderboard')"><i class="ph ph-arrows-out"></i></button>
               </div>
             </div>
-            <div id="customerLeaderboard" style="max-height: 380px; overflow-y: auto;"></div>
+            <div id="customerLeaderboard" style="overflow-y: auto; flex: 1; min-height: 480px;"></div>
           </div>
         </div>
       </div>
