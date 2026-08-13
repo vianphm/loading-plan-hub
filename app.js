@@ -353,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
     sortedWeeks.forEach(wk => {
       const w = weeks[wk];
       const ratio = w.gw > 0 ? (w.cw / w.gw).toFixed(2) : '-';
-      const density = w.cbm > 0 ? (w.cw / w.cbm).toFixed(1) : '-';
 
       tableHtml += `
         <tr onclick="openWeekDetail('${wk}')" style="cursor: pointer;" title="Nhấn để xem chi tiết ${wk}">
@@ -365,11 +364,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <td style="font-weight:700; color:#a78bfa;">${Math.round(w.cw).toLocaleString('vi-VN')}</td>
           <td style="color:#f59e0b;">${w.cbm.toFixed(2)}</td>
           <td><span class="badge ${Number(ratio) >= 1 ? 'badge-dest' : 'badge-agent'}">${ratio}</span></td>
-          <td>${density} KG/m³</td>
         </tr>
       `;
     });
-    if (weeklyTableBody) weeklyTableBody.innerHTML = tableHtml || `<tr><td colspan="9" style="text-align:center;">Không có dữ liệu tuần.</td></tr>`;
+    if (weeklyTableBody) weeklyTableBody.innerHTML = tableHtml || `<tr><td colspan="8" style="text-align:center;">Không có dữ liệu tuần.</td></tr>`;
 
     // Weekly Trend Chart
     const labels = sortedWeeks;
@@ -1341,6 +1339,90 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 50);
   };
 
+  // === Drill Down Logic for Week/Month Modals ===
+  window.drillDownDetail = function(periodType, periodName, filterType, filterValue) {
+    const modalBody = document.getElementById('modalBody');
+    const modalTitle = document.getElementById('modalTitleText');
+    
+    let rows = [];
+    if (periodType === 'week') {
+      rows = masterData.filter(r => getWeekName(r.date, r.fileName) === periodName && r.cw > 0 && !isJunkRow(r));
+    } else {
+      rows = masterData.filter(r => getMonthName(r.date, r.fileName) === periodName && r.cw > 0 && !isJunkRow(r));
+    }
+    
+    if (filterType === 'agent') rows = rows.filter(r => r.agent === filterValue);
+    else if (filterType === 'dest') rows = rows.filter(r => r.dest === filterValue);
+    else if (filterType === 'carrier') rows = rows.filter(r => r.carrier === filterValue);
+    
+    let totalCw = 0; const agentMap = {}, destMap = {}, carrierMap = {};
+    rows.forEach(r => {
+      totalCw += r.cw;
+      if (r.agent) agentMap[r.agent] = (agentMap[r.agent]||0) + r.cw;
+      if (r.dest) destMap[r.dest] = (destMap[r.dest]||0) + r.cw;
+      if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier]||0) + r.cw;
+    });
+    
+    const sa = Object.entries(agentMap).sort((a,b)=>b[1]-a[1]);
+    const sd = Object.entries(destMap).sort((a,b)=>b[1]-a[1]);
+    const sc = Object.entries(carrierMap).sort((a,b)=>b[1]-a[1]);
+    
+    const backFn = periodType === 'week' ? `window.openWeekDetail('${periodName}')` : `window.openMonthDetail('${periodName}')`;
+    const periodDisplay = periodType === 'week' ? `Tuần ${periodName}` : `Tháng ${periodName}`;
+    
+    modalTitle.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="${backFn}" style="background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'" title="Quay lại">
+          <i class="ph ph-arrow-left"></i>
+        </button>
+        <div style="display:flex;flex-direction:column;line-height:1.2;">
+          <span style="font-size:1.1rem;">Chi Tiết: ${filterValue}</span>
+          <span style="font-size:0.75rem;color:#94a3b8;font-weight:normal;">${periodDisplay}</span>
+        </div>
+      </div>
+    `;
+    
+    const mkR = (a,b,c) => `<tr><td>${a}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(b).toLocaleString('vi-VN')} kg</td></tr>`;
+    
+    let gridHtml = '';
+    if (filterType !== 'agent') {
+        gridHtml += `<div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Phân bổ Khách Hàng</h4>
+          <table class="modern-table"><tbody>${sa.map(([a,v])=>mkR(a,v,'#38bdf8')).join('')}</tbody></table></div>`;
+    }
+    if (filterType !== 'dest') {
+        gridHtml += `<div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Phân bổ Điểm Đến</h4>
+          <table class="modern-table"><tbody>${sd.map(([d,v])=>mkR(d,v,'#10b981')).join('')}</tbody></table></div>`;
+    }
+    if (filterType !== 'carrier') {
+        gridHtml += `<div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Phân bổ Hãng Bay</h4>
+          <table class="modern-table"><tbody>${sc.map(([c,v])=>mkR('✈ '+c,v,'#f59e0b')).join('')}</tbody></table></div>`;
+    }
+
+    modalBody.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div style="background:rgba(56,189,248,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(56,189,248,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG CW</div>
+            <div style="font-size:1.5rem;color:#38bdf8;font-weight:800;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(16,185,129,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG LÔ</div>
+            <div style="font-size:1.5rem;color:#10b981;font-weight:800;">${rows.length} lô</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(245,158,11,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">THỂ TÍCH (CBM)</div>
+            <div style="font-size:1.5rem;color:#f59e0b;font-weight:800;">${Math.round(totalCw*0.006).toLocaleString('vi-VN')}</div>
+          </div>
+          <div style="background:rgba(167,139,250,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(167,139,250,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">AVG CW/LÔ</div>
+            <div style="font-size:1.5rem;color:#a78bfa;font-weight:800;">${rows.length ? Math.round(totalCw/rows.length).toLocaleString('vi-VN') : 0} kg</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+          ${gridHtml}
+        </div>
+    `;
+  };
+
   // === Week Details Modal Logic ===
   window.openWeekDetail = function(weekName) {
     const modal = document.getElementById('fullscreenModal');
@@ -1363,7 +1445,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const sa = Object.entries(agentMap).sort((a,b)=>b[1]-a[1]);
       const sd = Object.entries(destMap).sort((a,b)=>b[1]-a[1]);
       const sc = Object.entries(carrierMap).sort((a,b)=>b[1]-a[1]);
-      const mkR = (a,b,c) => `<tr><td>${a}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(b).toLocaleString('vi-VN')} kg</td></tr>`;
+      const mkR = (type, name, display, v, c) => `
+        <tr onclick="window.drillDownDetail('week', '${weekName}', '${type}', '${name.replace(/'/g, "\\'")}')" 
+            style="cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''">
+          <td>${display}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(v).toLocaleString('vi-VN')} kg</td>
+        </tr>`;
       modalBody.innerHTML = `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
           <div style="background:rgba(56,189,248,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(56,189,248,0.2);">
@@ -1385,11 +1471,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;">
           <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top 15 Khách Hàng</h4>
-          <table class="modern-table"><tbody>${sa.slice(0,15).map(([a,v])=>mkR(a,v,'#38bdf8')).join('')}</tbody></table></div>
+          <table class="modern-table"><tbody>${sa.slice(0,15).map(([a,v])=>mkR('agent',a,a,v,'#38bdf8')).join('')}</tbody></table></div>
           <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top 15 Điểm Đến</h4>
-          <table class="modern-table"><tbody>${sd.slice(0,15).map(([d,v])=>mkR(d,v,'#10b981')).join('')}</tbody></table></div>
+          <table class="modern-table"><tbody>${sd.slice(0,15).map(([d,v])=>mkR('dest',d,d,v,'#10b981')).join('')}</tbody></table></div>
           <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Hãng Bay</h4>
-          <table class="modern-table"><tbody>${sc.slice(0,15).map(([c,v])=>mkR('✈ '+c,v,'#f59e0b')).join('')}</tbody></table></div>
+          <table class="modern-table"><tbody>${sc.slice(0,15).map(([c,v])=>mkR('carrier',c,'✈ '+c,v,'#f59e0b')).join('')}</tbody></table></div>
         </div>`;
     }, 50);
   };
@@ -1416,7 +1502,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const sa = Object.entries(agentMap).sort((a,b)=>b[1]-a[1]);
       const sd = Object.entries(destMap).sort((a,b)=>b[1]-a[1]);
       const sc = Object.entries(carrierMap).sort((a,b)=>b[1]-a[1]);
-      const mkR = (a,b,c) => `<tr><td>${a}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(b).toLocaleString('vi-VN')} kg</td></tr>`;
+      const mkR = (type, name, display, v, c) => `
+        <tr onclick="window.drillDownDetail('month', '${monthName}', '${type}', '${name.replace(/'/g, "\\'")}')" 
+            style="cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''">
+          <td>${display}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(v).toLocaleString('vi-VN')} kg</td>
+        </tr>`;
       modalBody.innerHTML = `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
           <div style="background:rgba(56,189,248,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(56,189,248,0.2);">
@@ -1438,11 +1528,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;">
           <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top 15 Khách Hàng</h4>
-          <table class="modern-table"><tbody>${sa.slice(0,15).map(([a,v])=>mkR(a,v,'#38bdf8')).join('')}</tbody></table></div>
+          <table class="modern-table"><tbody>${sa.slice(0,15).map(([a,v])=>mkR('agent',a,a,v,'#38bdf8')).join('')}</tbody></table></div>
           <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top 15 Điểm Đến</h4>
-          <table class="modern-table"><tbody>${sd.slice(0,15).map(([d,v])=>mkR(d,v,'#10b981')).join('')}</tbody></table></div>
+          <table class="modern-table"><tbody>${sd.slice(0,15).map(([d,v])=>mkR('dest',d,d,v,'#10b981')).join('')}</tbody></table></div>
           <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Hãng Bay</h4>
-          <table class="modern-table"><tbody>${sc.slice(0,15).map(([c,v])=>mkR('✈ '+c,v,'#f59e0b')).join('')}</tbody></table></div>
+          <table class="modern-table"><tbody>${sc.slice(0,15).map(([c,v])=>mkR('carrier',c,'✈ '+c,v,'#f59e0b')).join('')}</tbody></table></div>
         </div>`;
     }, 50);
   };
