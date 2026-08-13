@@ -65,7 +65,7 @@
           ico.style.animation = 'spin 1s linear infinite';
           
           setTimeout(() => {
-            window.location.reload(true);
+            window.location.href = window.location.pathname + '?_=' + Date.now();
           }, 300);
         });
         </script>

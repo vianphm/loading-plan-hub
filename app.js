@@ -41,7 +41,7 @@
           </div>
         </div>
         <div style="display:flex;gap:0.5rem;">
-          <button onclick="window.location.reload(true)" style="background:#10b981;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:999px;font-weight:700;cursor:pointer;font-size:0.85rem;">↻ Cập nhật ngay</button>
+          <button onclick="window.location.href=window.location.pathname+'?_='+Date.now()" style="background:#10b981;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:999px;font-weight:700;cursor:pointer;font-size:0.85rem;">↻ Cập nhật ngay</button>
           <button onclick="this.closest('#versionUpdateBanner').remove()" style="background:rgba(255,255,255,0.1);color:#6ee7b7;border:1px solid rgba(16,185,129,0.3);padding:0.5rem 0.75rem;border-radius:999px;cursor:pointer;font-size:0.85rem;">✕</button>
         </div>
       </div>`;
