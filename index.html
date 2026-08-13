@@ -55,29 +55,18 @@
           <span id="currentVersionDisplay" style="font-size: 0.65rem; color: #64748b; font-weight: 600; padding-right: 4px;">Đang tải phiên bản...</span>
         </div>
         <script>
-        document.getElementById('hardReloadBtn').addEventListener('click', async function() {
+        document.getElementById('hardReloadBtn').addEventListener('click', function() {
           const btn = this;
           const txt = document.getElementById('hardReloadText');
           const ico = document.getElementById('hardReloadIcon');
           btn.disabled = true;
-          txt.textContent = 'Đang xóa cache...';
+          txt.textContent = 'Đang tải bản mới...';
           ico.className = 'ph ph-spinner-gap';
           ico.style.animation = 'spin 1s linear infinite';
-          try {
-            // Step 1: Delete all Service Worker caches
-            if ('caches' in window) {
-              const keys = await caches.keys();
-              await Promise.all(keys.map(k => caches.delete(k)));
-            }
-            // Step 2: Unregister Service Workers
-            if ('serviceWorker' in navigator) {
-              const regs = await navigator.serviceWorker.getRegistrations();
-              await Promise.all(regs.map(r => r.unregister()));
-            }
-          } catch(e) {}
-          // Step 3: Hard navigate to root with unique timestamp (forces new HTTP request)
-          const ts = Date.now();
-          window.location.href = '/?_=' + ts;
+          
+          setTimeout(() => {
+            window.location.reload(true);
+          }, 300);
         });
         </script>
         
