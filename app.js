@@ -458,9 +458,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- DETAIL MASTER TABLE ---
+  const JUNK_AWB_PATTERNS = /^(loading plan|n\/a|awb|mawb|s[oố]\s*v[aậ]n|master|sheet|flight|no\.|stt|#)/i;
+
   function renderDetailTable() {
     if (!tableBody) return;
-    if (filteredData.length === 0) {
+
+    // Filter out junk rows from display (header rows accidentally imported)
+    const cleanData = filteredData.filter(item => {
+      const awb = (item.awb || '').trim();
+      if (!awb || JUNK_AWB_PATTERNS.test(awb)) return false;
+      if (awb === '-' || awb === '0') return false;
+      return true;
+    });
+
+    if (cleanData.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 3rem; color: #64748b;">Không tìm thấy bản ghi nào.</td></tr>`;
       if (paginationInfo) paginationInfo.textContent = 'Hiển thị 0 - 0 trong tổng số 0 bản ghi';
       if (prevPageBtn) prevPageBtn.disabled = true;
@@ -468,10 +479,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const totalPages = Math.ceil(filteredData.length / pageSize);
+    const totalPages = Math.ceil(cleanData.length / pageSize);
     const startIdx = (currentPage - 1) * pageSize;
-    const endIdx = Math.min(startIdx + pageSize, filteredData.length);
-    const pageItems = filteredData.slice(startIdx, endIdx);
+    const endIdx = Math.min(startIdx + pageSize, cleanData.length);
+    const pageItems = cleanData.slice(startIdx, endIdx);
 
     let html = '';
     pageItems.forEach((item, index) => {
@@ -493,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     tableBody.innerHTML = html;
-    if (paginationInfo) paginationInfo.textContent = `Hiển thị ${startIdx + 1} - ${endIdx} trong tổng số ${filteredData.length.toLocaleString('vi-VN')} bản ghi`;
+    if (paginationInfo) paginationInfo.textContent = `Hiển thị ${startIdx + 1} - ${endIdx} trong tổng số ${cleanData.length.toLocaleString('vi-VN')} bản ghi`;
     if (prevPageBtn) prevPageBtn.disabled = currentPage === 1;
     if (nextPageBtn) nextPageBtn.disabled = currentPage === totalPages;
   }
