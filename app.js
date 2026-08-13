@@ -12,6 +12,10 @@
       if (!r.ok) return;
       const data = await r.json();
       const latest = String(data.ts || data.version || '');
+      
+      const vDisplay = document.getElementById('currentVersionDisplay');
+      if (vDisplay) vDisplay.textContent = 'Version: ' + (data.version || latest);
+
       if (!latest) return;
       if (currentVersion === null) {
         currentVersion = latest; // first load, set baseline
