@@ -1456,11 +1456,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clone contents so we don't break the original
     modalBody.innerHTML = sourceEl.innerHTML;
     
-    // Remove max-height limits on tables inside the modal
+    // Allow tables inside the modal to expand but still have a scrollbar
     const tables = modalBody.querySelectorAll('table');
     tables.forEach(t => {
       t.style.maxHeight = 'none';
-      if(t.parentElement) t.parentElement.style.maxHeight = 'none';
+      if(t.parentElement) {
+        t.parentElement.style.maxHeight = '75vh';
+        t.parentElement.style.overflowY = 'auto';
+      }
     });
 
     modal.classList.add('active');
