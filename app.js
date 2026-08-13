@@ -15,7 +15,6 @@ window.forceHardReload = function() {
 // Polls data/version.json every 30s. When version changes → shows update banner.
 (function initVersionChecker() {
   let currentVersion = null;
-  let bannerShown = false;
 
   async function checkVersion() {
     try {
@@ -40,8 +39,14 @@ window.forceHardReload = function() {
         currentVersion = compareKey; // first load, set baseline
         return;
       }
-      if (compareKey !== currentVersion && !bannerShown) {
-        bannerShown = true;
+      // bannerShown used to latch true forever after the first detected change, so a tab
+      // left open across a SECOND later deploy (e.g. user dismissed the first banner, or
+      // just kept working) never got notified again. Advancing currentVersion here instead
+      // means: don't re-show for a commit already announced, but do announce the next
+      // genuinely newer one. showUpdateBanner's own DOM-existence check still prevents a
+      // duplicate insert if two polls somehow overlap.
+      if (compareKey !== currentVersion) {
+        currentVersion = compareKey;
         showUpdateBanner(data);
       }
     } catch(e) {}
