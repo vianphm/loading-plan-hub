@@ -458,18 +458,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- DETAIL MASTER TABLE ---
-  const JUNK_AWB_PATTERNS = /^(loading plan|n\/a|awb|mawb|s[oố]\s*v[aậ]n|master|sheet|flight|no\.|stt|#)/i;
+  // AWB hợp lệ: dạng XXX-XXXX XXXX hoặc số thuần, >= 5 ký tự
+  const VALID_AWB = /^\d{3}-\d{3,4}[\s]?\d{3,4}$|^\d{8,14}$/;
+
+  function isJunkRow(item) {
+    const awb   = (item.awb   || '').trim();
+    const agent = (item.agent || '').trim();
+    const cw    = Number(item.cw) || 0;
+
+    // AWB rỗng → rác
+    if (!awb) return true;
+
+    // AWB là text mô tả (không phải số vận đơn thật)
+    // Số vận đơn thật phải bắt đầu bằng chữ số
+    if (!/^\d/.test(awb)) return true;
+
+    // Agent là "Total:", "Tổng", rỗng → dòng tổng cộng
+    if (!agent || /^(total|t[oổ]ng|sub[\s\-]?total|grand)/i.test(agent)) return true;
+
+    // CW = 0 và không có flight → dòng rỗng vô nghĩa
+    if (cw === 0 && !(item.flight || '').trim()) return true;
+
+    return false;
+  }
 
   function renderDetailTable() {
     if (!tableBody) return;
 
-    // Filter out junk rows from display (header rows accidentally imported)
-    const cleanData = filteredData.filter(item => {
-      const awb = (item.awb || '').trim();
-      if (!awb || JUNK_AWB_PATTERNS.test(awb)) return false;
-      if (awb === '-' || awb === '0') return false;
-      return true;
-    });
+    const cleanData = filteredData.filter(item => !isJunkRow(item));
 
     if (cleanData.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 3rem; color: #64748b;">Không tìm thấy bản ghi nào.</td></tr>`;
@@ -489,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
       html += `
         <tr>
           <td>${startIdx + index + 1}</td>
-          <td style="font-weight: 700; color: #38bdf8;">${item.awb || 'N/A'}</td>
+          <td style="font-weight: 700; color: #38bdf8;">${item.awb}</td>
           <td><span class="badge badge-flight">${item.flight || '-'}</span></td>
           <td>${item.date || '-'}</td>
           <td><span class="badge badge-dest">${item.dest || '-'}</span></td>
