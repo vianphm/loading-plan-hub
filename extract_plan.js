@@ -7,11 +7,19 @@ const OUT = path.join(ROOT, 'data', 'master_plan.json');
 
 const ALIAS = {
   awb:       ['awb no.','awb no','awb','mawb','awbno','air waybill','no awb'],
-  flight:    ['flight','flt','flt/carrier','flight no','flightno'],
+  // "flight" and "connecting flight" are both a real flight number for that block's
+  // shipments (some consolidator blocks label it "CONNECTING FLIGHT" for transshipment
+  // cargo) - both feed the same field so it gets parsed instead of left blank.
+  flight:    ['flight','flt','flt/carrier','flight no','flightno','connecting flight'],
   etd:       ['etd','etd ','date','date fly','ngay bay','etd date'],
   time_dep:  ['time dep','time departure','dep time','time_dep','dep'],
   cot:       ['cot','cut off','cutoff','cut-off time'],
-  dest:      ['dest','destination','final dest','final destination','routing','route','des'],
+  // NOTE: 'routing'/'route' used to be aliased into "dest" itself - some blocks have BOTH
+  // a ROUTING column and a separate DEST column, and whichever appeared first in the header
+  // row silently won the "dest" slot (often ROUTING, which is blank far more often than DEST
+  // is), leaving the real destination code unread. They're routed to "connection" instead,
+  // which mapRow() already uses as a fallback source for extractDest()'s 3-letter-code regex.
+  dest:      ['dest','destination','final dest','final destination','des'],
   org:       ['org','origin','port of loading','pol'],
   agent:     ['agent','customer','cust','agent dba','debtor','forwarder','shipper','agent '],
   pcs:       ['pcs','pieces','piece','qty','quantity','pcs '],
@@ -20,7 +28,7 @@ const ALIAS = {
   cbm:       ['cbm','volume','vol','cbm ','volume (m3)','m3'],
   coload:    ['coload','co-load','co load','coloader','handling agent'],
   commodity: ['commodity','cmod','commoditydesc','cargo desc','description','goods'],
-  connection:['2nd leg','connection flight','connection','connecting','2nd leg/transit'],
+  connection:['2nd leg','connection flight','connection','connecting','2nd leg/transit','routing','route'],
   note:      ['note','notes','remark','remarks','ghi chu','ghi chú'],
   stt:       ['no','no.','stt','seq','#','priority'],
 };
@@ -32,7 +40,10 @@ Object.entries(ALIAS).forEach(([field, aliases]) => {
 
 function canonicalize(header) {
   if (!header) return null;
-  const h = String(header).trim().toLowerCase();
+  // Trailing "." / ":" varies by sheet ("FLIGHT NO." vs the aliased "flight no") and would
+  // otherwise silently miss a real header - strip it before matching instead of enumerating
+  // every punctuation variant of every alias by hand.
+  const h = String(header).trim().toLowerCase().replace(/[.:]+$/, '');
   return ALIAS_LOOKUP[h] || null;
 }
 
@@ -66,13 +77,26 @@ function cleanText(val) {
   return val ? String(val).trim().replace(/\s+/g, ' ') : '';
 }
 
-function findHeaderRow(data) {
-  let headerRow = 0, maxFilled = 0;
-  for (let i = 0; i < Math.min(15, data.length); i++) {
-    const filled = data[i].filter(c => c !== '' && c != null).length;
-    if (filled > maxFilled) { maxFilled = filled; headerRow = i; }
-  }
-  return { headerRow, maxFilled };
+/** Excel merged cells (e.g. one DEST/FLT/ETD cell spanning several AWB sub-rows of the same
+ * shipment) only carry their value in the merge's top-left cell - sheet_to_json's header:1
+ * array leaves every other covered cell blank. Without this, most sub-rows of a multi-AWB
+ * batch lose their DEST/FLT/ETD entirely (confirmed live: ~700 of 2272 records had a blank
+ * dest, concentrated in sheets that merge these columns most, e.g. FREEHAND-FDR). Propagates
+ * each merge's anchor value down/right to every cell the merge covers, so row-by-row parsing
+ * downstream sees the same value sheet_to_json's own HTML/formatted view would show a person. */
+function fillMergedCells(data, merges) {
+  (merges || []).forEach(({ s, e }) => {
+    const anchor = data[s.r] ? data[s.r][s.c] : undefined;
+    if (anchor === undefined || anchor === null || anchor === '') return;
+    for (let r = s.r; r <= e.r; r++) {
+      if (!data[r]) continue;
+      for (let c = s.c; c <= e.c; c++) {
+        if (data[r][c] === undefined || data[r][c] === null || data[r][c] === '') {
+          data[r][c] = anchor;
+        }
+      }
+    }
+  });
 }
 
 function mapRow(rawRow, colMap, sheetName, fileName) {
@@ -138,25 +162,60 @@ xlsxFiles.forEach(file => {
     if (!ws) return;
     const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
     if (data.length < 2) return;
-    const { headerRow, maxFilled } = findHeaderRow(data);
-    if (maxFilled < 3) return;
+    fillMergedCells(data, ws['!merges']);
 
-    const headers = data[headerRow];
-    const colMap = {};
-    headers.forEach((h, idx) => {
-      const field = canonicalize(h);
-      if (field && !(field in colMap)) colMap[field] = idx;
-    });
-
-    const hasUsefulData = ['dest','flight','awb','agent'].some(f => f in colMap);
-    if (!hasUsefulData) return;
-
+    // A single sheet is usually several "LOADING PLAN FOR <flight>/<date>" mini-tables
+    // stacked vertically, one per flight - and different mini-tables can have different
+    // column layouts (an extra ROUTING column, "FLIGHT" renamed to "CONNECTING FLIGHT",
+    // a CW column some blocks lack, DEBTOR shifted a column over...). Re-detecting the
+    // header for every block instead of once per sheet is what makes this correct; using
+    // one column layout for the whole sheet silently fed later blocks' data through an
+    // earlier block's column positions whenever the two didn't match.
+    let colMap = null;
     let sheetCount = 0;
-    for (let r = headerRow + 1; r < data.length; r++) {
-      const rawRow = data[r];
-      if (!rawRow || rawRow.every(c => c === '' || c == null)) continue;
-      const rec = mapRow(rawRow, colMap, sheetName, file);
+
+    for (let r = 0; r < data.length; r++) {
+      const row = data[r];
+      if (!row || row.every(c => c === '' || c == null)) continue;
+
+      // Banner/separator rows between blocks - the title line ("LOADING PLAN FOR
+      // OD572/01JUL") and the COT/ETD line immediately under it ("COT: 4 hours before
+      // ETD..."). Neither is a header or a data row; always skip both.
+      if (row.some(c => /loading plan/i.test(String(c)))) continue;
+      if (row.some(c => /^(cot|etd)\s*:/i.test(String(c).trim()))) continue;
+
+      // Does this row look like a new block's header? Only real header text exactly
+      // matches an alias (data cell values like AWB numbers or 3-letter city codes never
+      // do), so a handful of matches reliably means "this is a header row", not a
+      // coincidental match inside a data row.
+      const candidateMap = {};
+      row.forEach((h, idx) => {
+        const field = canonicalize(h);
+        if (field && !(field in candidateMap)) candidateMap[field] = idx;
+      });
+      const candidateUseful = ['dest', 'flight', 'awb', 'agent'].some((f) => f in candidateMap);
+      if (candidateUseful && Object.keys(candidateMap).length >= 3) {
+        colMap = candidateMap;
+        continue; // this row IS the header, not a data row
+      }
+
+      if (!colMap) continue; // no block header established yet (still in a title/banner row run)
+
+      // Each block ends with its own subtotal row ("TOTAL", "Total:") - never real
+      // shipment data, and its awb/dest/agent are blank often enough that it wasn't
+      // reliably caught by mapRow()'s own emptiness check when a nonzero weight total
+      // landed in one of those blank-elsewhere columns.
+      if (row.some((c) => /^total:?$/i.test(String(c).trim()))) continue;
+
+      const rec = mapRow(row, colMap, sheetName, file);
       if (!rec) continue;
+      // Backstop for banner-text/label-row variants the two regexes above don't cover
+      // ("PLAN VJ SIN 02JUL", "FS - ACP PLAN", a bare "Date:"/"Departure Time:" row, a COT
+      // note embedded mid-sentence...) - no real shipment weighs 0kg, so gw===cw===0 means
+      // this is title/label text that landed in the data columns, not cargo, regardless of
+      // wording (a stray PCS count sometimes survives on these rows too, so pcs alone isn't
+      // a reliable enough signal - checked weight only).
+      if (rec.gw === 0 && rec.cw === 0) continue;
       rec.id = id++;
       allRecords.push(rec);
       sheetCount++;
