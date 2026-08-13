@@ -9,7 +9,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Loading Plan Hub - Báo Cáo Phân Tích & Theo Dõi Hàng Tuần / Tháng</title>
   <meta name="description" content="Hệ thống tổng hợp, phân tích dữ liệu và dashboard theo dõi sản lượng vận tải hàng không hàng tuần & hàng tháng">
-  <link rel="stylesheet" href="style.css?v=1786588106">
+  <link rel="stylesheet" href="style.css?v=v1.1.2">
   <!-- Chart.js & Phosphor Icons -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -45,14 +45,14 @@
         </div>
         
         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-          <button class="pill-btn" id="hardReloadBtn" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);" 
-            title="Xóa toàn bộ cache và tải phiên bản mới nhất từ Vercel">
-            <span style="color: #10b981;" id="hardReloadText">Làm mới Giao diện (Update Code)</span>
+          <button class="pill-btn" id="hardReloadBtn" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35);" 
+            title="Xóa sạch cache trình duyệt và tải phiên bản Web mới nhất từ Vercel">
+            <span style="color: #10b981; font-weight: 700;" id="hardReloadText">⚡ Cập Nhật Phiên Bản</span>
             <div class="icon-circle" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">
-              <i class="ph ph-browser" id="hardReloadIcon"></i>
+              <i class="ph ph-arrows-clockwise" id="hardReloadIcon"></i>
             </div>
           </button>
-          <span id="currentVersionDisplay" style="font-size: 0.65rem; color: #64748b; font-weight: 600; padding-right: 4px;">Đang tải phiên bản...</span>
+          <div id="currentVersionDisplay" style="font-size: 0.68rem; color: #64748b; font-weight: 600; padding-right: 4px;">Đang tải phiên bản...</div>
         </div>
         <script>
         document.getElementById('hardReloadBtn').addEventListener('click', function() {
@@ -61,17 +61,19 @@
           const ico = document.getElementById('hardReloadIcon');
           btn.disabled = true;
           txt.textContent = 'Đang tải bản mới...';
-          ico.className = 'ph ph-spinner-gap';
-          ico.style.animation = 'spin 1s linear infinite';
-          
+          if (ico) {
+            ico.className = 'ph ph-spinner-gap';
+            ico.style.animation = 'spin 1s linear infinite';
+          }
           setTimeout(() => {
-            window.location.href = window.location.pathname + '?_=' + Date.now();
+            if (window.forceHardReload) window.forceHardReload();
+            else window.location.href = window.location.origin + window.location.pathname + '?v=' + Date.now();
           }, 300);
         });
         </script>
         
         <!-- Live Auto-Update & Refresh Button -->
-        <button class="pill-btn" id="refreshBtn" title="Kiểm tra & Cập nhật phiên bản dữ liệu (JSON) mới nhất từ hệ thống">
+        <button class="pill-btn" id="refreshBtn" title="Kiểm tra & Cập nhật phiên bản dữ liệu vận đơn (JSON) mới nhất">
           <span id="refreshBtnText">Đồng bộ Dữ liệu</span>
           <div class="icon-circle">
             <i class="ph ph-arrows-clockwise" id="refreshIcon"></i>
@@ -519,6 +521,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=v1.1.2"></script>
 </body>
 </html>

@@ -11,3 +11,6 @@ scratch/
 .system_generated/
 deploy_setup.js
 watch_and_sync.js
+
+.vercel
+.env*
