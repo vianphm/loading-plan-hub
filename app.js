@@ -1044,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!el) return;
     if (!sorted.length) { el.innerHTML = '<div style="color:#64748b;padding:2rem;text-align:center;">Không có dữ liệu</div>'; return; }
 
-    el.innerHTML = sorted.map(([dest, info]) => {
+    el.innerHTML = sorted.map(([dest, info], i) => {
       const ai = AIRPORT_INFO[dest] || { city: dest, country: '', flag: '✈️' };
       const region = REGION_MAP[dest] || 'Other';
       const color = REGION_COLOR[region] || '#64748b';
