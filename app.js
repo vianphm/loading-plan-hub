@@ -225,13 +225,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const newData = await response.json();
       
-      // Sanitize data to prevent undefined/null errors when calling .trim()
+      // Sanitize data to prevent undefined/null errors without introducing fake UNKNOWN agents
       newData.forEach(r => {
-        r.agent = r.agent ? String(r.agent) : 'UNKNOWN';
-        r.dest = r.dest ? String(r.dest) : 'UNKNOWN';
-        r.flight = r.flight ? String(r.flight) : '';
-        r.carrier = r.carrier ? String(r.carrier) : '';
-        r.awb = r.awb ? String(r.awb) : '';
+        r.agent = r.agent ? String(r.agent).trim() : '';
+        r.dest = r.dest ? String(r.dest).trim() : '';
+        r.flight = r.flight ? String(r.flight).trim() : '';
+        r.carrier = r.carrier ? String(r.carrier).trim() : '';
+        r.awb = r.awb ? String(r.awb).trim() : '';
       });
 
       const isDataUpdated = newData.length !== lastFetchedRecordCount;
@@ -961,13 +961,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const sortBy = document.getElementById('sortAgentBy')?.value || 'cw';
     const agentMap = {};
     data.forEach(r => {
-      const a = r.agent.trim().toUpperCase();
+      const a = (r.agent || '').trim().toUpperCase();
+      if (!a || a === 'UNKNOWN' || a === 'KHÔNG RÕ' || a.length < 2) return;
       if (!agentMap[a]) agentMap[a] = { cw: 0, gw: 0, count: 0, pcs: 0, dests: {} };
       agentMap[a].cw += r.cw || 0;
       agentMap[a].gw += r.gw || 0;
       agentMap[a].count++;
       agentMap[a].pcs += r.pcs || 0;
-      agentMap[a].dests[r.dest] = (agentMap[a].dests[r.dest] || 0) + (r.cw || 0);
+      if (r.dest) agentMap[a].dests[r.dest] = (agentMap[a].dests[r.dest] || 0) + (r.cw || 0);
     });
 
     let sorted = Object.entries(agentMap);
@@ -1028,11 +1029,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderDestinationIntel(data) {
     const destMap = {};
     data.forEach(r => {
+      if (!r.dest) return;
       if (!destMap[r.dest]) destMap[r.dest] = { cw: 0, gw: 0, count: 0, agents: new Set() };
       destMap[r.dest].cw += r.cw || 0;
       destMap[r.dest].gw += r.gw || 0;
       destMap[r.dest].count++;
-      destMap[r.dest].agents.add(r.agent.trim().toUpperCase());
+      const a = (r.agent || '').trim().toUpperCase();
+      if (a && a !== 'UNKNOWN' && a.length >= 2) destMap[r.dest].agents.add(a);
     });
     const sorted = Object.entries(destMap).sort((a,b) => b[1].cw - a[1].cw);
     const maxCw = sorted[0]?.[1]?.cw || 1;
@@ -1073,9 +1076,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get top 8 agents and top 8 dests by CW
     const agentTotals = {}, destTotals = {};
     data.forEach(r => {
-      const a = r.agent.trim().toUpperCase();
-      agentTotals[a] = (agentTotals[a] || 0) + (r.cw || 0);
-      destTotals[r.dest] = (destTotals[r.dest] || 0) + (r.cw || 0);
+      const a = (r.agent || '').trim().toUpperCase();
+      if (a && a !== 'UNKNOWN' && a.length >= 2) {
+        agentTotals[a] = (agentTotals[a] || 0) + (r.cw || 0);
+      }
+      if (r.dest) destTotals[r.dest] = (destTotals[r.dest] || 0) + (r.cw || 0);
     });
     const topAgents = Object.entries(agentTotals).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
     const topDests = Object.entries(destTotals).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
@@ -1084,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const matrix = {};
     topAgents.forEach(a => { matrix[a] = {}; topDests.forEach(d => matrix[a][d] = 0); });
     data.forEach(r => {
-      const a = r.agent.trim().toUpperCase();
+      const a = (r.agent || '').trim().toUpperCase();
       if (matrix[a] && topDests.includes(r.dest)) {
         matrix[a][r.dest] = (matrix[a][r.dest] || 0) + (r.cw || 0);
       }
