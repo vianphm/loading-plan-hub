@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(`⚠️ Không thể kết nối CDN Vercel: ${err.message}`);
     } finally {
       if (refreshIcon) refreshIcon.classList.remove('spin-icon');
-      if (refreshBtnText) refreshBtnText.textContent = 'Cập nhật phiên bản mới';
+      if (refreshBtnText) refreshBtnText.textContent = 'Đồng bộ Dữ liệu';
     }
   }
 
