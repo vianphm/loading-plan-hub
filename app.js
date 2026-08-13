@@ -1038,7 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.entries(agentMap).sort((a,b)=>b[1].cw-a[1].cw).forEach(([agent,info]) => {
       const [topDest, topDestCw] = Object.entries(info.dests).sort((a,b)=>b[1]-a[1])[0] || ['-',0];
       const region = REGION_MAP[topDest] || 'Other';
-      rows.push([agent,Math.round(info.cw),Math.round(info.gw),info.count,info.pcs,Math.round(info.cw/info.count),topDest,Math.round(topDestCw),region]);
+              rows.push([agent,Math.round(info.cw),Math.round(info.gw),info.count,info.pcs,Math.round(info.cw/info.count),topDest,Math.round(topDestCw),region]);
     });
     const csv = rows.map(r=>r.join(',')).join('\n');
     const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -1067,83 +1067,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modalTitleText');
     const modalBody = document.getElementById('modalBody');
     if (!modal) return;
-    
-    modalTitle.textContent = `Chi Tiết Khách Hàng: ${agentName}`;
-    
-    // Aggregate Data for this agent
-    const agentData = masterData.filter(r => r.agent && r.agent.trim().toUpperCase() === agentName.toUpperCase() && r.cw > 0);
-    
-    let totalCw = 0;
-    let totalPcs = 0;
-    const monthMap = {};
-    const destMap = {};
-    const carrierMap = {};
-    
-    agentData.forEach(r => {
-      totalCw += r.cw;
-      totalPcs += r.pcs || 0;
-      
-      const mMatch = (r.fileName || '').match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/i);
-      const m = mMatch ? mMatch[0].toUpperCase() : 'UNKNOWN';
-      monthMap[m] = (monthMap[m] || 0) + r.cw;
-      
-      if (r.dest) destMap[r.dest] = (destMap[r.dest] || 0) + r.cw;
-      if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier] || 0) + r.cw;
-    });
-    
-    const sortedMonths = Object.entries(monthMap).sort((a,b) => b[1]-a[1]);
-    const sortedDests = Object.entries(destMap).sort((a,b) => b[1]-a[1]);
-    const sortedCarriers = Object.entries(carrierMap).sort((a,b) => b[1]-a[1]);
-    const totalCbm = totalCw * 0.006;
-    
-    modalBody.innerHTML = `
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SẢN LƯỢNG (CW)</span>
-          <div style="font-size:1.75rem; color:#38bdf8; font-weight:800; margin-top:4px;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SỐ LÔ</span>
-          <div style="font-size:1.75rem; color:#10b981; font-weight:800; margin-top:4px;">${agentData.length} lô</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">THỂ TÍCH ƯỚC TÍNH (CBM)</span>
-          <div style="font-size:1.75rem; color:#f59e0b; font-weight:800; margin-top:4px;">${Math.round(totalCbm).toLocaleString('vi-VN')} CBM</div>
-        </div>
-      </div>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
-        <!-- Tháng -->
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Sản Lượng Theo Tháng</h4>
-          <table class="modern-table">
-            <tbody>
-              ${sortedMonths.slice(0, 12).map(([m, cw]) => `<tr><td>${m}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-            </tbody>
-          </table>
-        </div>
-        <!-- Điểm Đến -->
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Điểm Đến (Dest) Top 15</h4>
-          <table class="modern-table">
-            <tbody>
-              ${sortedDests.slice(0, 15).map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-            </tbody>
-          </table>
-        </div>
-        <!-- Hãng Bay -->
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Ưa Chuộng</h4>
-          <table class="modern-table">
-            <tbody>
-              ${sortedCarriers.slice(0, 15).map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
+    modalTitle.textContent = `Chi Tiết: ${agentName}`;
+    modalBody.innerHTML = '<div style="text-align:center;padding:3rem;color:#64748b;">Đang tải...</div>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      const rows = masterData.filter(r => r.agent && r.agent.trim().toUpperCase() === agentName.toUpperCase() && r.cw > 0);
+      let totalCw = 0; const monthMap = {}, destMap = {}, carrierMap = {};
+      rows.forEach(r => {
+        totalCw += r.cw;
+        const m = ((r.fileName||'').match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/i)||['UNK'])[0].toUpperCase();
+        monthMap[m] = (monthMap[m]||0) + r.cw;
+        if (r.dest) destMap[r.dest] = (destMap[r.dest]||0) + r.cw;
+        if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier]||0) + r.cw;
+      });
+      const sm = Object.entries(monthMap).sort((a,b)=>b[1]-a[1]);
+      const sd = Object.entries(destMap).sort((a,b)=>b[1]-a[1]);
+      const sc = Object.entries(carrierMap).sort((a,b)=>b[1]-a[1]);
+      const mkR = (a,b,c) => `<tr><td>${a}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(b).toLocaleString('vi-VN')} kg</td></tr>`;
+      modalBody.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div style="background:rgba(56,189,248,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(56,189,248,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG CW</div>
+            <div style="font-size:1.5rem;color:#38bdf8;font-weight:800;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(16,185,129,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG LÔ</div>
+            <div style="font-size:1.5rem;color:#10b981;font-weight:800;">${rows.length} lô</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(245,158,11,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">THỂ TÍCH (CBM)</div>
+            <div style="font-size:1.5rem;color:#f59e0b;font-weight:800;">${Math.round(totalCw*0.006).toLocaleString('vi-VN')}</div>
+          </div>
+          <div style="background:rgba(167,139,250,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(167,139,250,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">AVG CW/LÔ</div>
+            <div style="font-size:1.5rem;color:#a78bfa;font-weight:800;">${rows.length ? Math.round(totalCw/rows.length).toLocaleString('vi-VN') : 0} kg</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;">
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Theo Tháng</h4>
+          <table class="modern-table"><tbody>${sm.slice(0,12).map(([m,v])=>mkR(m,v,'#38bdf8')).join('')}</tbody></table></div>
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top 15 Điểm Đến</h4>
+          <table class="modern-table"><tbody>${sd.slice(0,15).map(([d,v])=>mkR(d,v,'#10b981')).join('')}</tbody></table></div>
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Hãng Bay</h4>
+          <table class="modern-table"><tbody>${sc.slice(0,15).map(([c,v])=>mkR('✈ '+c,v,'#f59e0b')).join('')}</tbody></table></div>
+        </div>`;
+    }, 50);
   };
 
   // === Company Details Modal Logic ===
@@ -1152,66 +1121,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modalTitleText');
     const modalBody = document.getElementById('modalBody');
     if (!modal) return;
-    
-    modalTitle.textContent = `Phân Tích Sales Team: ${companyName}`;
-    
-    const compData = masterData.filter(r => r.company && r.company === companyName && r.cw > 0);
-    
-    let totalCw = 0, totalPcs = 0;
-    const agentMap = {}, destMap = {}, carrierMap = {};
-    
-    compData.forEach(r => {
-      totalCw += r.cw;
-      totalPcs += r.pcs || 0;
-      
-      if (r.agent) agentMap[r.agent] = (agentMap[r.agent] || 0) + r.cw;
-      if (r.dest) destMap[r.dest] = (destMap[r.dest] || 0) + r.cw;
-      if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier] || 0) + r.cw;
-    });
-    
-    const sortedAgents = Object.entries(agentMap).sort((a,b) => b[1]-a[1]);
-    const sortedDests = Object.entries(destMap).sort((a,b) => b[1]-a[1]);
-    const sortedCarriers = Object.entries(carrierMap).sort((a,b) => b[1]-a[1]);
-    
-    modalBody.innerHTML = `
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SẢN LƯỢNG (CW)</span>
-          <div style="font-size:1.75rem; color:#f59e0b; font-weight:800; margin-top:4px;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SỐ LÔ</span>
-          <div style="font-size:1.75rem; color:#10b981; font-weight:800; margin-top:4px;">${compData.length} lô</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">SỐ KHÁCH HÀNG (AGENTS)</span>
-          <div style="font-size:1.75rem; color:#38bdf8; font-weight:800; margin-top:4px;">${sortedAgents.length}</div>
-        </div>
-      </div>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Top Khách Hàng Của Team</h4>
-          <table class="modern-table"><tbody>
-            ${sortedAgents.slice(0, 15).map(([a, cw]) => `<tr><td>${a}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Tuyến Bay (Dest) Chủ Lực</h4>
-          <table class="modern-table"><tbody>
-            ${sortedDests.slice(0, 15).map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Ưa Chuộng</h4>
-          <table class="modern-table"><tbody>
-            ${sortedCarriers.slice(0, 15).map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-      </div>
-    `;
+    modalTitle.textContent = `Sales Team: ${companyName}`;
+    modalBody.innerHTML = '<div style="text-align:center;padding:3rem;color:#64748b;">Đang tải...</div>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      const rows = masterData.filter(r => r.company && r.company === companyName && r.cw > 0);
+      let totalCw = 0; const agentMap = {}, destMap = {}, carrierMap = {};
+      rows.forEach(r => {
+        totalCw += r.cw;
+        if (r.agent) agentMap[r.agent] = (agentMap[r.agent]||0) + r.cw;
+        if (r.dest) destMap[r.dest] = (destMap[r.dest]||0) + r.cw;
+        if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier]||0) + r.cw;
+      });
+      const sa = Object.entries(agentMap).sort((a,b)=>b[1]-a[1]);
+      const sd = Object.entries(destMap).sort((a,b)=>b[1]-a[1]);
+      const sc = Object.entries(carrierMap).sort((a,b)=>b[1]-a[1]);
+      const mkR = (a,b,c) => `<tr><td>${a}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(b).toLocaleString('vi-VN')} kg</td></tr>`;
+      modalBody.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div style="background:rgba(245,158,11,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(245,158,11,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG CW</div>
+            <div style="font-size:1.5rem;color:#f59e0b;font-weight:800;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(16,185,129,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG LÔ</div>
+            <div style="font-size:1.5rem;color:#10b981;font-weight:800;">${rows.length} lô</div>
+          </div>
+          <div style="background:rgba(56,189,248,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(56,189,248,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">SỐ AGENT</div>
+            <div style="font-size:1.5rem;color:#38bdf8;font-weight:800;">${sa.length}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;">
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Khách Hàng</h4>
+          <table class="modern-table"><tbody>${sa.slice(0,15).map(([a,v])=>mkR(a,v,'#38bdf8')).join('')}</tbody></table></div>
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top 15 Điểm Đến</h4>
+          <table class="modern-table"><tbody>${sd.slice(0,15).map(([d,v])=>mkR(d,v,'#10b981')).join('')}</tbody></table></div>
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Hãng Bay</h4>
+          <table class="modern-table"><tbody>${sc.slice(0,15).map(([c,v])=>mkR('✈ '+c,v,'#f59e0b')).join('')}</tbody></table></div>
+        </div>`;
+    }, 50);
   };
 
   // === Dest Details Modal Logic ===
@@ -1220,64 +1170,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modalTitleText');
     const modalBody = document.getElementById('modalBody');
     if (!modal) return;
-    
     const ai = AIRPORT_INFO[destName];
-    const destTitle = ai ? `${ai.flag} ${destName} - ${ai.city}` : destName;
-    modalTitle.textContent = `Phân Tích Tuyến Bay: ${destTitle}`;
-    
-    const destData = masterData.filter(r => r.dest && r.dest.toUpperCase() === destName.toUpperCase() && r.cw > 0);
-    
-    let totalCw = 0, totalPcs = 0;
-    const agentMap = {}, compMap = {}, carrierMap = {};
-    
-    destData.forEach(r => {
-      totalCw += r.cw;
-      totalPcs += r.pcs || 0;
-      
-      if (r.agent) agentMap[r.agent] = (agentMap[r.agent] || 0) + r.cw;
-      if (r.company) compMap[r.company] = (compMap[r.company] || 0) + r.cw;
-      if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier] || 0) + r.cw;
-    });
-    
-    const sortedAgents = Object.entries(agentMap).sort((a,b) => b[1]-a[1]);
-    const sortedComps = Object.entries(compMap).sort((a,b) => b[1]-a[1]);
-    const sortedCarriers = Object.entries(carrierMap).sort((a,b) => b[1]-a[1]);
-    
-    modalBody.innerHTML = `
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SẢN LƯỢNG ĐI (CW)</span>
-          <div style="font-size:1.75rem; color:#10b981; font-weight:800; margin-top:4px;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SỐ LÔ</span>
-          <div style="font-size:1.75rem; color:#38bdf8; font-weight:800; margin-top:4px;">${destData.length} lô</div>
-        </div>
-      </div>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Top Khách Hàng (Agent) Tuyến Này</h4>
-          <table class="modern-table"><tbody>
-            ${sortedAgents.slice(0, 15).map(([a, cw]) => `<tr><td>${a}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Sales Team Bán Mạnh Tuyến Này</h4>
-          <table class="modern-table"><tbody>
-            ${sortedComps.slice(0, 15).map(([c, cw]) => `<tr><td>${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Tuyến Này</h4>
-          <table class="modern-table"><tbody>
-            ${sortedCarriers.slice(0, 15).map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-      </div>
-    `;
+    modalTitle.textContent = `Tuyến Bay: ${ai ? ai.flag+' '+destName+' - '+ai.city : destName}`;
+    modalBody.innerHTML = '<div style="text-align:center;padding:3rem;color:#64748b;">Đang tải...</div>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      const rows = masterData.filter(r => r.dest && r.dest.toUpperCase() === destName.toUpperCase() && r.cw > 0);
+      let totalCw = 0; const agentMap = {}, compMap = {}, carrierMap = {};
+      rows.forEach(r => {
+        totalCw += r.cw;
+        if (r.agent) agentMap[r.agent] = (agentMap[r.agent]||0) + r.cw;
+        if (r.company) compMap[r.company] = (compMap[r.company]||0) + r.cw;
+        if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier]||0) + r.cw;
+      });
+      const sa = Object.entries(agentMap).sort((a,b)=>b[1]-a[1]);
+      const sc2 = Object.entries(compMap).sort((a,b)=>b[1]-a[1]);
+      const sc = Object.entries(carrierMap).sort((a,b)=>b[1]-a[1]);
+      const mkR = (a,b,c) => `<tr><td>${a}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(b).toLocaleString('vi-VN')} kg</td></tr>`;
+      modalBody.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div style="background:rgba(16,185,129,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(16,185,129,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG CW ĐI</div>
+            <div style="font-size:1.5rem;color:#10b981;font-weight:800;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
+          </div>
+          <div style="background:rgba(56,189,248,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(56,189,248,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG LÔ</div>
+            <div style="font-size:1.5rem;color:#38bdf8;font-weight:800;">${rows.length} lô</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;">
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Khách Hàng</h4>
+          <table class="modern-table"><tbody>${sa.slice(0,15).map(([a,v])=>mkR(a,v,'#38bdf8')).join('')}</tbody></table></div>
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Sales Team Mạnh</h4>
+          <table class="modern-table"><tbody>${sc2.slice(0,15).map(([c,v])=>mkR(c,v,'#f59e0b')).join('')}</tbody></table></div>
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Hãng Bay</h4>
+          <table class="modern-table"><tbody>${sc.slice(0,15).map(([c,v])=>mkR('✈ '+c,v,'#10b981')).join('')}</tbody></table></div>
+        </div>`;
+    }, 50);
   };
 
   // === Region Details Modal Logic ===
@@ -1286,74 +1216,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modalTitleText');
     const modalBody = document.getElementById('modalBody');
     if (!modal) return;
-    
-    modalTitle.textContent = `Phân Tích Vùng (Region): ${regionName}`;
-    
-    // Aggregate Data for this region
-    const regionData = masterData.filter(r => {
-      const reg = REGION_MAP[r.dest] || 'Other';
-      return reg === regionName && r.cw > 0;
-    });
-    
-    let totalCw = 0;
-    let totalPcs = 0;
-    const destMap = {};
-    const agentMap = {};
-    const carrierMap = {};
-    
-    regionData.forEach(r => {
-      totalCw += r.cw;
-      totalPcs += r.pcs || 0;
-      
-      if (r.dest) destMap[r.dest] = (destMap[r.dest] || 0) + r.cw;
-      if (r.agent) agentMap[r.agent] = (agentMap[r.agent] || 0) + r.cw;
-      if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier] || 0) + r.cw;
-    });
-    
-    const sortedDests = Object.entries(destMap).sort((a,b) => b[1]-a[1]);
-    const sortedAgents = Object.entries(agentMap).sort((a,b) => b[1]-a[1]);
-    const sortedCarriers = Object.entries(carrierMap).sort((a,b) => b[1]-a[1]);
-    const totalCbm = totalCw * 0.006;
-    
-    modalBody.innerHTML = `
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SẢN LƯỢNG (CW)</span>
-          <div style="font-size:1.75rem; color:#38bdf8; font-weight:800; margin-top:4px;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">TỔNG SỐ LÔ</span>
-          <div style="font-size:1.75rem; color:#10b981; font-weight:800; margin-top:4px;">${regionData.length} lô</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">THỂ TÍCH ƯỚC TÍNH (CBM)</span>
-          <div style="font-size:1.75rem; color:#f59e0b; font-weight:800; margin-top:4px;">${Math.round(totalCbm).toLocaleString('vi-VN')} CBM</div>
-        </div>
-      </div>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Các Điểm Đến (Dest) Thuộc Vùng</h4>
-          <table class="modern-table"><tbody>
-            ${sortedDests.slice(0, 15).map(([d, cw]) => `<tr><td>${d}</td><td style="text-align:right; color:#10b981; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Top Khách Hàng Bán Vùng Này</h4>
-          <table class="modern-table"><tbody>
-            ${sortedAgents.slice(0,10).map(([a, cw]) => `<tr><td>${a}</td><td style="text-align:right; color:#38bdf8; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-        <div>
-          <h4 style="color:#e2e8f0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Hãng Bay (Carrier) Ưa Chuộng</h4>
-          <table class="modern-table"><tbody>
-            ${sortedCarriers.map(([c, cw]) => `<tr><td>✈️ ${c}</td><td style="text-align:right; color:#f59e0b; font-weight:700;">${Math.round(cw).toLocaleString('vi-VN')} kg</td></tr>`).join('')}
-          </tbody></table>
-        </div>
-      </div>
-    `;
+    modalTitle.textContent = `Khu Vực: ${regionName}`;
+    modalBody.innerHTML = '<div style="text-align:center;padding:3rem;color:#64748b;">Đang tải...</div>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      const rows = masterData.filter(r => (REGION_MAP[r.dest]||'Other') === regionName && r.cw > 0);
+      let totalCw = 0, totalPcs = 0; const destMap = {}, agentMap = {}, carrierMap = {};
+      rows.forEach(r => {
+        totalCw += r.cw; totalPcs += r.pcs||0;
+        if (r.dest) destMap[r.dest] = (destMap[r.dest]||0) + r.cw;
+        if (r.agent) agentMap[r.agent] = (agentMap[r.agent]||0) + r.cw;
+        if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier]||0) + r.cw;
+      });
+      const sd = Object.entries(destMap).sort((a,b)=>b[1]-a[1]);
+      const sa = Object.entries(agentMap).sort((a,b)=>b[1]-a[1]);
+      const sc = Object.entries(carrierMap).sort((a,b)=>b[1]-a[1]);
+      const mkR = (a,b,c) => `<tr><td>${a}</td><td style="text-align:right;color:${c};font-weight:700;">${Math.round(b).toLocaleString('vi-VN')} kg</td></tr>`;
+      modalBody.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div style="background:rgba(56,189,248,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(56,189,248,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG CW</div>
+            <div style="font-size:1.5rem;color:#38bdf8;font-weight:800;">${Math.round(totalCw).toLocaleString('vi-VN')} kg</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(16,185,129,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">TỔNG LÔ</div>
+            <div style="font-size:1.5rem;color:#10b981;font-weight:800;">${rows.length} lô</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.08);padding:1.25rem;border-radius:8px;border:1px solid rgba(245,158,11,0.2);">
+            <div style="font-size:0.7rem;color:#94a3b8;font-weight:700;margin-bottom:4px;">THỂ TÍCH (CBM)</div>
+            <div style="font-size:1.5rem;color:#f59e0b;font-weight:800;">${Math.round(totalCw*0.006).toLocaleString('vi-VN')}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;">
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Điểm Đến Thuộc Vùng</h4>
+          <table class="modern-table"><tbody>${sd.slice(0,15).map(([d,v])=>mkR(d,v,'#10b981')).join('')}</tbody></table></div>
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Khách Hàng</h4>
+          <table class="modern-table"><tbody>${sa.slice(0,15).map(([a,v])=>mkR(a,v,'#38bdf8')).join('')}</tbody></table></div>
+          <div><h4 style="color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-size:0.85rem;">Top Hãng Bay</h4>
+          <table class="modern-table"><tbody>${sc.slice(0,15).map(([c,v])=>mkR('✈ '+c,v,'#f59e0b')).join('')}</tbody></table></div>
+        </div>`;
+    }, 50);
   };
 
   // === Modal Logic ===

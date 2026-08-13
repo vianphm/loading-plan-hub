@@ -1,4 +1,4 @@
-/* Toast Notification System */
+﻿/* Toast Notification System */
 .toast-notification {
   position: fixed;
   top: 1.5rem;
@@ -521,74 +521,160 @@ body {
   }
 }
 
- / *   C u s t o m   S c r o l l b a r s   * / 
- : : - w e b k i t - s c r o l l b a r   { 
-     w i d t h :   6 p x ; 
-     h e i g h t :   6 p x ; 
- } 
- : : - w e b k i t - s c r o l l b a r - t r a c k   { 
-     b a c k g r o u n d :   r g b a ( 2 5 5 ,   2 5 5 ,   2 5 5 ,   0 . 0 2 ) ; 
-     b o r d e r - r a d i u s :   4 p x ; 
- } 
- : : - w e b k i t - s c r o l l b a r - t h u m b   { 
-     b a c k g r o u n d :   r g b a ( 2 5 5 ,   2 5 5 ,   2 5 5 ,   0 . 1 ) ; 
-     b o r d e r - r a d i u s :   4 p x ; 
- } 
- : : - w e b k i t - s c r o l l b a r - t h u m b : h o v e r   { 
-     b a c k g r o u n d :   r g b a ( 2 5 5 ,   2 5 5 ,   2 5 5 ,   0 . 2 ) ; 
- } 
-  
- 
- / *   F u l l s c r e e n   M o d a l   * / 
- . m o d a l - o v e r l a y   { 
-     p o s i t i o n :   f i x e d ; 
-     t o p :   0 ; 
-     l e f t :   0 ; 
-     w i d t h :   1 0 0 v w ; 
-     h e i g h t :   1 0 0 v h ; 
-     b a c k g r o u n d :   r g b a ( 5 ,   7 ,   1 7 ,   0 . 9 5 ) ; 
-     b a c k d r o p - f i l t e r :   b l u r ( 1 0 p x ) ; 
-     z - i n d e x :   1 0 0 0 0 ; 
-     d i s p l a y :   f l e x ; 
-     j u s t i f y - c o n t e n t :   c e n t e r ; 
-     a l i g n - i t e m s :   f l e x - s t a r t ; 
-     o v e r f l o w - y :   a u t o ; 
-     o p a c i t y :   0 ; 
-     p o i n t e r - e v e n t s :   n o n e ; 
-     t r a n s i t i o n :   o p a c i t y   0 . 3 s   v a r ( - - e a s e - s p r i n g ) ; 
- } 
- . m o d a l - o v e r l a y . a c t i v e   { 
-     o p a c i t y :   1 ; 
-     p o i n t e r - e v e n t s :   a l l ; 
- } 
- . m o d a l - c o n t e n t   { 
-     w i d t h :   9 0 % ; 
-     m a x - w i d t h :   1 4 0 0 p x ; 
-     b a c k g r o u n d :   v a r ( - - b g - c a r d ) ; 
-     b o r d e r :   1 p x   s o l i d   v a r ( - - b o r d e r - h a i r l i n e ) ; 
-     b o r d e r - r a d i u s :   1 2 p x ; 
-     m a r g i n :   4 0 p x   a u t o ; 
-     b o x - s h a d o w :   0   2 5 p x   5 0 p x   - 1 2 p x   r g b a ( 0 ,   0 ,   0 ,   0 . 5 ) ; 
-     t r a n s f o r m :   t r a n s l a t e Y ( 2 0 p x ) ; 
-     t r a n s i t i o n :   t r a n s f o r m   0 . 3 s   v a r ( - - e a s e - s p r i n g ) ; 
-     o v e r f l o w :   h i d d e n ; 
- } 
- . m o d a l - o v e r l a y . a c t i v e   . m o d a l - c o n t e n t   { 
-     t r a n s f o r m :   t r a n s l a t e Y ( 0 ) ; 
- } 
- . m o d a l - h e a d e r   { 
-     p a d d i n g :   1 . 5 r e m   2 r e m ; 
-     b o r d e r - b o t t o m :   1 p x   s o l i d   v a r ( - - b o r d e r - h a i r l i n e ) ; 
-     d i s p l a y :   f l e x ; 
-     j u s t i f y - c o n t e n t :   s p a c e - b e t w e e n ; 
-     a l i g n - i t e m s :   c e n t e r ; 
-     b a c k g r o u n d :   r g b a ( 1 5 ,   2 3 ,   4 2 ,   0 . 8 ) ; 
-     p o s i t i o n :   s t i c k y ; 
-     t o p :   0 ; 
-     z - i n d e x :   1 0 ; 
- } 
- . m o d a l - b o d y   { 
-     p a d d i n g :   2 r e m ; 
- } 
-  
- 
+/* Custom Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* Fullscreen Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(5, 7, 17, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal-content {
+  width: 90%;
+  max-width: 1400px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  margin: 40px auto;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+.modal-overlay.active .modal-content {
+  transform: translateY(0);
+}
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 15, 30, 0.9);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.modal-body {
+  padding: 2rem;
+}
+
+/* Modern Table (used in modals) */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.modern-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: #cbd5e1;
+}
+.modern-table tr:last-child td { border-bottom: none; }
+.modern-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
+/* Fullscreen Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 7, 17, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease-spring);
+}
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal-content {
+  width: 90%;
+  max-width: 1400px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: 12px;
+  margin: 40px auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transform: translateY(20px);
+  transition: transform 0.3s var(--ease-spring);
+  overflow: hidden;
+}
+.modal-overlay.active .modal-content {
+  transform: translateY(0);
+}
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-hairline);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.8);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.modal-body {
+  padding: 2rem;
+}
+
+/* Modern Table (used in modals) */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.modern-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: #cbd5e1;
+}
+.modern-table tr:last-child td {
+  border-bottom: none;
+}
+.modern-table tr:hover td {
+  background: rgba(255,255,255,0.03);
+}
