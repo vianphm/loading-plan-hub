@@ -210,6 +210,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) throw new Error('Không thể tải file data/master_plan.json');
       
       const newData = await response.json();
+      
+      // Sanitize data to prevent undefined/null errors when calling .trim()
+      newData.forEach(r => {
+        r.agent = r.agent ? String(r.agent) : 'UNKNOWN';
+        r.dest = r.dest ? String(r.dest) : 'UNKNOWN';
+        r.flight = r.flight ? String(r.flight) : '';
+        r.carrier = r.carrier ? String(r.carrier) : '';
+        r.awb = r.awb ? String(r.awb) : '';
+      });
 
       const isDataUpdated = newData.length !== lastFetchedRecordCount;
       masterData = newData;
