@@ -867,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!sel || sel.options.length > 1) return;
     const months = [...new Set(masterData.map(r => {
       const f = r.fileName || '';
-      const m = f.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/i);
+      const m = f.match(/(?<![a-z])(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(?![a-z])/i);
       return m ? m[0].toLowerCase() : null;
     }).filter(Boolean))];
     const labels = {jan:'Tháng 1',feb:'Tháng 2',mar:'Tháng 3',apr:'Tháng 4',may:'Tháng 5',jun:'Tháng 6',jul:'Tháng 7',aug:'Tháng 8',sep:'Tháng 9',oct:'Tháng 10',nov:'Tháng 11',dec:'Tháng 12'};
@@ -1197,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let totalCw = 0; const monthMap = {}, destMap = {}, carrierMap = {};
       rows.forEach(r => {
         totalCw += r.cw;
-        const m = ((r.fileName||'').match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/i)||['UNK'])[0].toUpperCase();
+        const m = ((r.fileName||'').match(/(?<![a-z])(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(?![a-z])/i)||['UNK'])[0].toUpperCase();
         monthMap[m] = (monthMap[m]||0) + r.cw;
         if (r.dest) destMap[r.dest] = (destMap[r.dest]||0) + r.cw;
         if (r.carrier) carrierMap[r.carrier] = (carrierMap[r.carrier]||0) + r.cw;
