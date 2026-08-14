@@ -2,8 +2,8 @@ const XLSX = require('xlsx');
 const fs   = require('fs');
 const path = require('path');
 
-const ROOT = "y:/LD PLAN";
-const OUT = path.join(ROOT, 'data', 'master_plan.json');
+const ROOT = "y:/LD PLAN/Plan";
+const OUT = "y:/LD PLAN/data/master_plan.json";
 
 const ALIAS = {
   awb:       ['awb no.','awb no','awb','mawb','awbno','air waybill','no awb'],
@@ -147,9 +147,29 @@ function mapRow(rawRow, colMap, sheetName, fileName) {
   };
 }
 
-const xlsxFiles = fs.readdirSync(ROOT).filter(f => f.endsWith('.xlsx') && !f.startsWith('~$')).sort();
+const FULL_REBUILD = process.argv.includes('--full');
+
+const allXlsxFiles = fs.readdirSync(ROOT).filter(f => f.endsWith('.xlsx') && !f.startsWith('~$')).sort();
+
 let allRecords = [];
 let id = 1;
+let alreadyDone = new Set();
+
+if (!FULL_REBUILD && fs.existsSync(OUT)) {
+  allRecords = JSON.parse(fs.readFileSync(OUT, 'utf8'));
+  alreadyDone = new Set(allRecords.map(r => r.fileName));
+  id = allRecords.reduce((max, r) => Math.max(max, r.id), 0) + 1;
+}
+
+const xlsxFiles = allXlsxFiles.filter(f => !alreadyDone.has(f));
+
+if (alreadyDone.size > 0) {
+  console.log(`⏭️  Bỏ qua ${alreadyDone.size} file đã trích xuất trước đó (dùng --full để ép quét lại toàn bộ)`);
+}
+if (xlsxFiles.length === 0) {
+  console.log('✅ Không có file mới, master_plan.json đã cập nhật.');
+  process.exit(0);
+}
 
 xlsxFiles.forEach(file => {
   const filePath = path.join(ROOT, file);
@@ -173,6 +193,14 @@ xlsxFiles.forEach(file => {
     // earlier block's column positions whenever the two didn't match.
     let colMap = null;
     let sheetCount = 0;
+    // Some consolidator blocks only put FLT/ETD on the first AWB row of a batch and leave
+    // every sub-AWB row's cell truly empty (not an Excel merge - fillMergedCells() can't see
+    // it), relying on a human reader to infer "same as the row above". Carry the last non-blank
+    // value forward within the current block so sub-rows inherit it too; resets whenever a new
+    // block header is detected below.
+    let carry = {};
+    let bannerEtd = null;
+    const CARRY_FIELDS = ['flight', 'etd', 'time_dep', 'cot'];
 
     for (let r = 0; r < data.length; r++) {
       const row = data[r];
@@ -181,7 +209,15 @@ xlsxFiles.forEach(file => {
       // Banner/separator rows between blocks - the title line ("LOADING PLAN FOR
       // OD572/01JUL") and the COT/ETD line immediately under it ("COT: 4 hours before
       // ETD..."). Neither is a header or a data row; always skip both.
-      if (row.some(c => /loading plan/i.test(String(c)))) continue;
+      if (row.some(c => /loading plan/i.test(String(c)))) {
+        // Some blocks never fill an ETD cell anywhere in the block - the only place the
+        // date exists is in this banner text itself. Pull it out as a fallback so those
+        // rows aren't left blank; a real ETD cell later in the block still overrides it.
+        const bannerText = row.map((c) => String(c)).join(' ');
+        const m = bannerText.match(/(\d{1,2})\s*(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)/i);
+        if (m) bannerEtd = `${m[1]}-${m[2][0].toUpperCase()}${m[2].slice(1).toLowerCase()}`;
+        continue;
+      }
       if (row.some(c => /^(cot|etd)\s*:/i.test(String(c).trim()))) continue;
 
       // Does this row look like a new block's header? Only real header text exactly
@@ -196,6 +232,8 @@ xlsxFiles.forEach(file => {
       const candidateUseful = ['dest', 'flight', 'awb', 'agent'].some((f) => f in candidateMap);
       if (candidateUseful && Object.keys(candidateMap).length >= 3) {
         colMap = candidateMap;
+        carry = {};
+        if (bannerEtd) carry.etd = bannerEtd; // seed from the block's own banner date
         continue; // this row IS the header, not a data row
       }
 
@@ -206,6 +244,17 @@ xlsxFiles.forEach(file => {
       // reliably caught by mapRow()'s own emptiness check when a nonzero weight total
       // landed in one of those blank-elsewhere columns.
       if (row.some((c) => /^total:?$/i.test(String(c).trim()))) continue;
+
+      CARRY_FIELDS.forEach((f) => {
+        const idx = colMap[f];
+        if (idx === undefined) return;
+        const val = row[idx];
+        if (val === undefined || val === null || String(val).trim() === '') {
+          if (carry[f] !== undefined) row[idx] = carry[f];
+        } else {
+          carry[f] = val;
+        }
+      });
 
       const rec = mapRow(row, colMap, sheetName, file);
       if (!rec) continue;

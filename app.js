@@ -183,6 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshBtn = document.getElementById('refreshBtn');
   const refreshBtnText = document.getElementById('refreshBtnText');
   const refreshIcon = document.getElementById('refreshIcon');
+  const extractBtn = document.getElementById('extractBtn');
+  const extractBtnText = document.getElementById('extractBtnText');
+  const extractIcon = document.getElementById('extractIcon');
   const lastSyncTime = document.getElementById('lastSyncTime');
   const exportBtn = document.getElementById('exportBtn');
   const prevPageBtn = document.getElementById('prevPageBtn');
@@ -243,6 +246,13 @@ document.addEventListener('DOMContentLoaded', () => {
         r.flight = r.flight ? String(r.flight).trim() : '';
         r.carrier = r.carrier ? String(r.carrier).trim() : '';
         r.awb = r.awb ? String(r.awb).trim() : '';
+        // extractCarrier() in extract_plan.js strips the 2-char carrier code (e.g. "VJ")
+        // off flight before saving it separately as r.carrier - re-attach it here so every
+        // consumer of r.flight (table, dropdown, search, CSV) shows the full code "VJ960"
+        // instead of the bare number "960".
+        if (r.carrier && r.flight && !r.flight.toUpperCase().startsWith(r.carrier.toUpperCase())) {
+          r.flight = r.carrier + r.flight;
+        }
       });
 
       const isDataUpdated = newData.length !== lastFetchedRecordCount;
@@ -267,6 +277,36 @@ document.addEventListener('DOMContentLoaded', () => {
       if (refreshIcon) refreshIcon.classList.remove('spin-icon');
       if (refreshBtnText) refreshBtnText.textContent = 'Đồng bộ Dữ liệu';
     }
+  }
+
+  // Scan Plan\ folder for new Excel files, re-extract, then reload the dashboard.
+  // Only works against the local dev server (server.js) - it spawns extract_plan.js on
+  // disk, which the static Vercel deployment has no filesystem access to do.
+  async function runExtractAndAnalyze() {
+    try {
+      extractBtn.disabled = true;
+      if (extractIcon) { extractIcon.className = 'ph ph-spinner-gap'; extractIcon.style.animation = 'spin 1s linear infinite'; }
+      if (extractBtnText) extractBtnText.textContent = 'Đang quét & phân tích...';
+
+      const res = await fetch('/api/extract', { method: 'POST' });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.log || 'extract_plan.js lỗi');
+
+      await loadData(true);
+    } catch (err) {
+      console.error('Error running extract:', err);
+      showToast(`⚠️ Lấy data mới thất bại: ${err.message}`);
+    } finally {
+      extractBtn.disabled = false;
+      if (extractIcon) { extractIcon.className = 'ph ph-database'; extractIcon.style.animation = ''; }
+      if (extractBtnText) extractBtnText.textContent = '📥 Lấy Data Mới';
+    }
+  }
+
+  // extractBtn only makes sense on localhost (needs server.js + local Y:\ drive access)
+  if (extractBtn && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    extractBtn.style.display = '';
+    extractBtn.addEventListener('click', runExtractAndAnalyze);
   }
 
   // Populate Filter Selects
@@ -370,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const weeks = {};
 
     filteredData.forEach(item => {
-      const wk = getWeekName(item.date, item.fileName);
+      const wk = getWeekName(item.etd, item.fileName);
       if (!weeks[wk]) {
         weeks[wk] = { count: 0, pcs: 0, gw: 0, cw: 0, cbm: 0 };
       }
@@ -462,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const carriers = {};
 
     filteredData.forEach(item => {
-      const m = getMonthName(item.date, item.fileName);
+      const m = getMonthName(item.etd, item.fileName);
       if (!months[m]) months[m] = { count: 0, pcs: 0, gw: 0, cw: 0, cbm: 0, flights: new Set() };
       months[m].count++;
       months[m].pcs += Number(item.pcs) || 0;
@@ -594,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${startIdx + index + 1}</td>
           <td style="font-weight: 700; color: #38bdf8;">${item.awb}</td>
           <td><span class="badge badge-flight">${item.flight || '-'}</span></td>
-          <td>${item.date || '-'}</td>
+          <td>${item.etd || '-'}</td>
           <td><span class="badge badge-dest">${item.dest || '-'}</span></td>
           <td><span class="badge badge-agent">${item.agent || '-'}</span></td>
           <td style="font-weight: 600;">${item.pcs || 0}</td>
@@ -622,7 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `"${item.sheetName || ''}"`,
       `"${item.awb || ''}"`,
       `"${item.flight || ''}"`,
-      `"${item.date || ''}"`,
+      `"${item.etd || ''}"`,
       `"${item.dest || ''}"`,
       `"${item.agent || ''}"`,
       item.pcs || 0,
@@ -1392,9 +1432,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let rows = [];
     if (periodType === 'week') {
-      rows = masterData.filter(r => getWeekName(r.date, r.fileName) === periodName && r.cw > 0 && !isJunkRow(r));
+      rows = masterData.filter(r => getWeekName(r.etd, r.fileName) === periodName && r.cw > 0 && !isJunkRow(r));
     } else {
-      rows = masterData.filter(r => getMonthName(r.date, r.fileName) === periodName && r.cw > 0 && !isJunkRow(r));
+      rows = masterData.filter(r => getMonthName(r.etd, r.fileName) === periodName && r.cw > 0 && !isJunkRow(r));
     }
     
     if (filterType === 'agent') rows = rows.filter(r => r.agent === filterValue);
@@ -1480,7 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     setTimeout(() => {
-      const rows = masterData.filter(r => getWeekName(r.date, r.fileName) === weekName && r.cw > 0 && !isJunkRow(r));
+      const rows = masterData.filter(r => getWeekName(r.etd, r.fileName) === weekName && r.cw > 0 && !isJunkRow(r));
       let totalCw = 0; const agentMap = {}, destMap = {}, carrierMap = {};
       rows.forEach(r => {
         totalCw += r.cw;
@@ -1537,7 +1577,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     setTimeout(() => {
-      const rows = masterData.filter(r => getMonthName(r.date, r.fileName) === monthName && r.cw > 0 && !isJunkRow(r));
+      const rows = masterData.filter(r => getMonthName(r.etd, r.fileName) === monthName && r.cw > 0 && !isJunkRow(r));
       let totalCw = 0; const agentMap = {}, destMap = {}, carrierMap = {};
       rows.forEach(r => {
         totalCw += r.cw;
