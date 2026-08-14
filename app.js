@@ -403,6 +403,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fn.includes('21 JUL') || fn.includes('22 JUL') || fn.includes('23 JUL') || fn.includes('24 JUL')) return 'Tuần 29 (21-24/07)';
     if (fn.includes('25 JUL') || fn.includes('25-26-27') || fn.includes('28 JUL')) return 'Tuần 30 (25-28/07)';
     if (fn.includes('29 JUL') || fn.includes('30 JUL') || fn.includes('31JUL') || fn.includes('02+3AUG')) return 'Tuần 31 (29/07-03/08)';
+    if (fn.includes('04AUG') || fn.includes('05AUG') || fn.includes('06AUG') || fn.includes('07AUG') || fn.includes('08AUG') || fn.includes('09+10AUG')) return 'Tuần 32 (04-10/08)';
+    if (fn.includes('10-11AUG') || fn.includes('12AUG') || fn.includes('13AUG')) return 'Tuần 33 (11-13/08)';
     return 'Tuần khác';
   }
 
